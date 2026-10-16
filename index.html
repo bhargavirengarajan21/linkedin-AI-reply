@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LinkedIn AI Reply — draft replies and outreach, you hit Send</title>
+  <meta name="description" content="A Chrome extension that drafts AI replies to your LinkedIn messages and outreach from profiles, using your Claude subscription or an API key. You review and send.">
+  <style>
+    :root {
+      --ink: #1d2226; --muted: #56687a; --bg: #f4f2ee; --card: #fff;
+      --brand: #0a66c2; --line: #e0e0e0; --ok: #057642;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 16px/1.6 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+    a { color: var(--brand); }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 0 20px; }
+    header.hero { text-align: center; padding: 72px 20px 48px; }
+    .badge { display: inline-block; font-size: 13px; font-weight: 600; color: var(--brand); background: #e8f0fe; padding: 4px 12px; border-radius: 999px; margin-bottom: 18px; }
+    h1 { font-size: 40px; line-height: 1.15; margin: 0 0 14px; }
+    h1 span { color: var(--brand); }
+    .sub { font-size: 19px; color: var(--muted); max-width: 640px; margin: 0 auto 28px; }
+    .cta { display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .btn { display: inline-block; font-weight: 600; text-decoration: none; border-radius: 24px; padding: 12px 24px; }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-ghost { background: var(--card); color: var(--brand); border: 1px solid var(--brand); }
+    .note { font-size: 14px; color: var(--muted); margin-top: 14px; }
+    nav.toc { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 20px; margin: 0 auto 8px; display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: center; font-size: 14px; font-weight: 600; }
+    nav.toc a { text-decoration: none; }
+    section { padding: 40px 0; }
+    h2 { font-size: 26px; margin: 0 0 8px; }
+    h2 + .lead { color: var(--muted); margin: 0 0 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; }
+    .card h3 { margin: 0 0 8px; font-size: 18px; }
+    .card p { margin: 0; color: var(--muted); font-size: 15px; }
+    .card p + p { margin-top: 8px; }
+    ol.steps { counter-reset: step; list-style: none; padding: 0; margin: 0; }
+    ol.steps li { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px 16px 58px; position: relative; margin-bottom: 12px; }
+    ol.steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 16px; top: 16px; width: 28px; height: 28px; background: var(--brand); color: #fff; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 14px; }
+    ol.steps li p { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
+    code { background: #eef1f3; padding: 1px 6px; border-radius: 4px; font-size: 90%; }
+    kbd { background: #fff; border: 1px solid #b0b7bd; border-bottom-width: 2px; border-radius: 5px; padding: 1px 7px; font-size: 90%; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 15px; }
+    th { background: #eef3f8; font-size: 14px; }
+    tr:last-child td { border-bottom: none; }
+    td.name { font-weight: 600; white-space: nowrap; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; vertical-align: middle; margin-left: 6px; }
+    .tag-dm { background: #e8f0fe; color: var(--brand); }
+    .tag-email { background: #f3e8fe; color: #7b2cbf; }
+    .privacy { background: #eafaf0; border: 1px solid #bfe8cd; border-radius: 12px; padding: 20px 22px; }
+    .privacy h2 { color: var(--ok); margin-top: 0; }
+    details { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 4px 18px; margin-bottom: 10px; }
+    summary { font-weight: 600; cursor: pointer; padding: 12px 0; }
+    details p { color: var(--muted); margin: 0 0 14px; }
+    footer { text-align: center; color: var(--muted); font-size: 14px; padding: 40px 20px 60px; }
+    .shot { width: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--card); padding: 40px; text-align: center; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <span class="badge">Chrome extension · Manifest V3 · v1.2.3</span>
+      <h1>Draft LinkedIn replies &amp; outreach with AI.<br><span>You review and hit Send.</span></h1>
+      <p class="sub">A floating button on LinkedIn messages and profiles drafts a reply or a tailored outreach message in seconds — using your Claude subscription or your own API key. It never sends anything on its own.</p>
+      <div class="cta">
+        <!-- Replace # with your Chrome Web Store URL once published -->
+        <a class="btn btn-primary" href="#get-started">Get started</a>
+        <a class="btn btn-ghost" href="README.md">Read the docs</a>
+      </div>
+      <p class="note">No tracking. Your settings and keys stay in your browser.</p>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <nav class="toc">
+      <a href="#features">Features</a>
+      <a href="#reply">Replying</a>
+      <a href="#outreach">Outreach</a>
+      <a href="#templates">Templates</a>
+      <a href="#get-started">Setup</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </div>
+
+  <section class="wrap" id="features">
+    <h2>What it does</h2>
+    <p class="lead">Two jobs: reply to messages you receive, and write the first message to people you find.</p>
+    <div class="grid">
+      <div class="card"><h3>✨ Reply in the thread</h3><p>Click into any LinkedIn message box and an <strong>AI Reply</strong> button appears above it. It reads the open conversation and drafts a reply into the box. Click again for a different version.</p></div>
+      <div class="card"><h3>🎯 Goal &amp; voice Ask</h3><p>The <strong>▾</strong> menu sets the intent: Interested, Ask for details, Politely decline, or Thank — plus an optional one-off <strong>Ask</strong> you can type or dictate with the <strong>🎤 mic</strong>.</p></div>
+      <div class="card"><h3>📝 Polish your draft</h3><p>Type a rough draft first, then click AI Reply. Instead of starting over, it refines what you wrote and keeps the facts you put in.</p></div>
+      <div class="card"><h3>📇 Outreach from profiles</h3><p>On any profile, a <strong>Draft message</strong> button fills one of your templates — reach-out, referral ask, application, follow-up and more — word for word for that person.</p></div>
+      <div class="card"><h3>🧠 Remembers context</h3><p>It keeps a short recap of your recent exchanges with each person, locally, so replies stay consistent over time. Clear it any time in Settings.</p></div>
+      <div class="card"><h3>🔌 Your choice of model</h3><p>Use your Claude subscription via a helper Chrome launches on demand (no API key), or paste an Anthropic or OpenAI API key. Switch any time in Settings.</p></div>
+      <div class="card"><h3>🔒 Nothing sends itself</h3><p>The extension only writes text into the box. You always read it, edit it, and press Send. Keys and details never leave your browser.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="reply">
+    <h2>Replying to messages</h2>
+    <p class="lead">Everything you can do from a message box.</p>
+    <div class="grid">
+      <div class="card"><h3>The button</h3><p>Click into a message box on the Messaging page or in a chat pop-up. <strong>✨ AI Reply</strong> appears just above it. Click to draft; click again for a fresh take.</p></div>
+      <div class="card"><h3>Keyboard shortcut</h3><p>Prefer the keyboard? Press <kbd>Alt</kbd> + <kbd>R</kbd> while your cursor is in a message box to do exactly what the button does.</p></div>
+      <div class="card"><h3>Goal, Ask &amp; voice</h3><p>Open <strong>▾</strong> to steer the reply: pick a goal, and add an optional <strong>Ask</strong> for just this draft — type it, or tap the <strong>🎤</strong> and dictate it.</p></div>
+      <div class="card"><h3>Review in a panel</h3><p>The draft lands in the box <em>and</em> in a panel where you can edit it, <strong>Copy</strong> it, or <strong>Insert into box</strong> again — nothing sends until you press Send.</p></div>
+      <div class="card"><h3>Answers recruiter questions</h3><p>It only states facts you saved in Settings (rate, W2/C2C, locations, availability). Anything it doesn't know, it offers to confirm or asks about instead of inventing.</p></div>
+      <div class="card"><h3>Reads the whole thread</h3><p>It replies to the latest message using earlier ones as context, so it stays on topic across a back-and-forth conversation.</p></div>
+      <div class="card"><h3>Layout-change proof</h3><p>If LinkedIn changes its page structure and the thread can't be parsed cleanly, it falls back to the raw page text around the box so you still get a draft.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="outreach">
+    <h2>Outreach from a profile</h2>
+    <p class="lead">On any LinkedIn profile, the <strong>✨ Draft message</strong> button (bottom-left) reads the profile and fills one of your templates.</p>
+    <div class="grid">
+      <div class="card"><h3>Sharper matching</h3><p>Add a role, or paste the job description, into the notes. It picks 2–3 skills <em>only</em> from your saved stack that best match the JD or the person's team and tech.</p></div>
+      <div class="card"><h3>One send-from line</h3><p>Email templates use the send-from address you set once in Settings, shown at the top of the draft so you know which inbox to send from.</p></div>
+      <div class="card"><h3>Copy or insert</h3><p>Use <strong>Copy message</strong>, <strong>Copy all</strong> (with subject and send-from), or <strong>Insert into LinkedIn box</strong> after you open Message or Add a note.</p></div>
+      <div class="card"><h3>Safe placeholders</h3><p>Anything the profile doesn't tell it — a referrer's name, a date — stays in <code>[brackets]</code> for you to fill, so nothing gets made up.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="templates">
+    <h2>Outreach templates</h2>
+    <p class="lead">Short LinkedIn DMs and full emails, each tuned to a situation.</p>
+    <table>
+      <thead><tr><th>Template</th><th>What it writes</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Reach out <span class="tag tag-dm">DM</span></td><td>A short, direct LinkedIn message introducing yourself to this person, tied to their team or work.</td></tr>
+        <tr><td class="name">Ask for a referral <span class="tag tag-dm">DM</span></td><td>A short DM asking them to refer you for a specific role at their company.</td></tr>
+        <tr><td class="name">Referred by someone <span class="tag tag-email">Email</span></td><td>An email that opens with who referred you (left in <code>[brackets]</code> if unknown), with subject and send-from.</td></tr>
+        <tr><td class="name">Application <span class="tag tag-email">Email</span></td><td>An application email for a named role, matching your stack to the JD.</td></tr>
+        <tr><td class="name">No open position <span class="tag tag-email">Email</span></td><td>A speculative email for when there's no posted role, using your default target role.</td></tr>
+        <tr><td class="name">Recruiter networking <span class="tag tag-email">Email</span></td><td>A warm note to a recruiter to get on their radar for relevant roles.</td></tr>
+        <tr><td class="name">Follow-up <span class="tag tag-email">Email</span></td><td>A polite nudge on an earlier message or application.</td></tr>
+        <tr><td class="name">After interview <span class="tag tag-email">Email</span></td><td>A thank-you / follow-up email after an interview.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="wrap">
+    <h2>See it in action</h2>
+    <div class="shot">Add a screenshot or GIF here (e.g. <code>screenshots/reply.png</code>) before publishing.</div>
+  </section>
+
+  <section class="wrap" id="get-started">
+    <h2>Get started</h2>
+    <p class="lead">A one-time setup, then it just works on LinkedIn.</p>
+    <ol class="steps">
+      <li><strong>Install Claude Code (recommended path).</strong>
+        <p>Install it from <a href="https://code.claude.com/docs/en/setup" target="_blank">code.claude.com</a>, open a terminal, run <code>claude</code> once and sign in with your Claude account. Prefer an API key instead? Skip to step 4.</p></li>
+      <li><strong>Install Node.js.</strong>
+        <p>Grab the LTS build from <a href="https://nodejs.org" target="_blank">nodejs.org</a> if <code>node -v</code> doesn't already print a version. The local helper needs it.</p></li>
+      <li><strong>Load the extension.</strong>
+        <p>Open <code>chrome://extensions</code>, turn on <strong>Developer mode</strong>, click <strong>Load unpacked</strong>, and pick the folder that directly contains <code>manifest.json</code>. On first install, this page opens automatically.</p></li>
+      <li><strong>Register the helper (once).</strong>
+        <p>Double-click <code>nativehost\install.bat</code> once. That's it — Chrome then <strong>launches Claude on demand</strong>, with no window to keep open and nothing running in the background. Prefer an API key? Skip this step entirely.</p></li>
+      <li><strong>Tell it about you.</strong>
+        <p>Click the toolbar icon to open Settings. Choose your provider (Claude subscription, or paste an Anthropic/OpenAI key), fill in your name, background, writing style, stack and send-from email, then click <strong>Save &amp; test</strong>. The AI only states facts you provide here.</p></li>
+      <li><strong>Draft away.</strong>
+        <p>Refresh LinkedIn — a "LinkedIn AI Reply is on" message confirms it loaded. Click into a message or open a profile and press the ✨ button. Review, edit, and Send.</p></li>
+    </ol>
+  </section>
+
+  <section class="wrap" id="privacy">
+    <div class="privacy">
+      <h2>Private by design</h2>
+      <p>Your settings, API keys, profile details and remembered conversations are stored only in your browser. The extension drafts text and inserts it into the message box — it never sends messages for you. When using your Claude subscription, Chrome launches a local helper on your own machine that only the extension is allowed to call. Optionally keep your details in a git-ignored <code>config.local.js</code> so they survive a reinstall.</p>
+    </div>
+  </section>
+
+  <section class="wrap" id="faq">
+    <h2>FAQ</h2>
+    <details><summary>Do I need an API key?</summary><p>No. By default it uses your Claude subscription through Claude Code running on your computer, so there's no key and no extra cost beyond your plan. An Anthropic or OpenAI API key is an optional alternative.</p></details>
+    <details><summary>Does it send messages automatically?</summary><p>Never. It only writes a draft into the box. You read it, edit it, and press Send yourself — every time.</p></details>
+    <details><summary>How long does a draft take?</summary><p>Roughly 5–20 seconds with Claude Code, depending on your machine and the length of the thread.</p></details>
+    <details><summary>Will it make up facts about me?</summary><p>No. It only states facts written in Settings → "Background &amp; preferences", and picks skills only from your saved stack. Missing details are left as <code>[brackets]</code> or turned into a question.</p></details>
+    <details><summary>Does it remember my conversations?</summary><p>It keeps a short recap of your last few exchanges with each person — only in this browser — so new drafts stay consistent with what you said before. It's capped and never uploaded, and you can wipe it with one click in Settings → Memory.</p></details>
+    <details><summary>Can I dictate instead of typing?</summary><p>Yes. Open the <strong>▾</strong> options under AI Reply and tap the <strong>🎤 mic</strong> to speak your one-off Ask; it fills the field for you. The first time, allow microphone access for LinkedIn.</p></details>
+    <details><summary>The reply misread the conversation — why?</summary><p>LinkedIn may have changed its page layout. The extension then falls back to reading the raw page text around the message box; re-clicking usually gives a cleaner result.</p></details>
+    <details><summary>Is this affiliated with LinkedIn or Anthropic?</summary><p>No. It's an independent project that works with your own Claude or API access.</p></details>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      LinkedIn AI Reply is an independent project and is not affiliated with LinkedIn or Anthropic.<br>
+      <a href="README.md">Documentation</a>
+    </div>
+  </footer>
+</body>
+</html>

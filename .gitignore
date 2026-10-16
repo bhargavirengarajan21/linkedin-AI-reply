@@ -1,0 +1,17 @@
+# Private, per-user config — never commit this. Copy config.local.example.js instead.
+config.local.js
+
+# Private signing key for the extension's fixed ID — never commit or share this.
+nativehost-private-key.pem
+
+# Native host manifest is generated per-machine by nativehost/install.bat.
+nativehost/manifest.json
+
+# Build output
+dist/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
