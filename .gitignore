@@ -9,6 +9,7 @@ nativehost/manifest.json
 
 # Build output
 dist/
+SKILL.md
 
 # OS / editor noise
 .DS_Store
