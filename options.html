@@ -42,7 +42,7 @@
     <h2>Before you start: connect Claude</h2>
     <p>This extension needs your own Claude access to draft replies. Pick one below:</p>
     <ol>
-      <li><b>Claude subscription (recommended, no API key):</b> install <a href="https://code.claude.com/docs/en/setup" target="_blank">Claude Code</a>, run <code>claude</code> once in a terminal and sign in, then double-click <code>bridge\start-bridge.bat</code> and leave it running.</li>
+      <li><b>Claude subscription (recommended, no API key):</b> install <a href="https://code.claude.com/docs/en/setup" target="_blank">Claude Code</a>, run <code>claude</code> once in a terminal and sign in, then double-click <code>nativehost\install.bat</code> once. Chrome launches Claude on demand — nothing to keep running.</li>
       <li><b>Anthropic API key:</b> choose "Anthropic API key" below and paste a key from <a href="https://platform.claude.com" target="_blank">platform.claude.com</a>.</li>
     </ol>
     <p>Then click <b>Save &amp; test</b> at the bottom to confirm it works.</p>
@@ -59,10 +59,7 @@
     </label>
 
     <div class="provider" data-provider="claudecode">
-      <p class="hint">Uses Claude Code on this computer, signed in with your Claude plan. Keep <code>bridge\start-bridge.bat</code> running while you use LinkedIn.</p>
-      <label>Bridge address
-        <input id="bridgeUrl" type="text">
-      </label>
+      <p class="hint">Uses Claude Code on this computer, signed in with your Claude plan. Run <code>nativehost\install.bat</code> once; Chrome launches Claude on demand. The conversation text is drafted on your machine and sent to Anthropic by Claude Code under your plan.</p>
       <label>Model <small>(sonnet, opus, haiku, or blank for your Claude Code default)</small>
         <input id="claudeCodeModel" type="text">
       </label>
@@ -72,6 +69,7 @@
       <label>Anthropic API key <small>(platform.claude.com)</small>
         <input id="anthropicKey" type="password" autocomplete="off" placeholder="sk-ant-...">
       </label>
+      <p class="hint">With this provider, your "About you" text and the open conversation or profile text are sent from your browser directly to Anthropic (api.anthropic.com).</p>
       <label>Model
         <input id="anthropicModel" type="text">
       </label>
@@ -81,10 +79,12 @@
       <label>OpenAI API key
         <input id="openaiKey" type="password" autocomplete="off" placeholder="sk-...">
       </label>
+      <p class="hint">With this provider, your "About you" text and the open conversation or profile text are sent from your browser directly to OpenAI (api.openai.com).</p>
       <label>Model
         <input id="openaiModel" type="text">
       </label>
     </div>
+    <p class="hint">Keys are stored in plaintext in your browser's local extension storage — standard for extensions, but anything with access to this browser profile can read them.</p>
   </fieldset>
 
   <fieldset>

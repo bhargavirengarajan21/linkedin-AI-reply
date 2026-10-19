@@ -26,10 +26,10 @@ async function test() {
   out.style.display = 'block';
 
   if ($('provider').value === 'claudecode') {
-    out.textContent = 'Checking the local bridge…';
+    out.textContent = 'Checking the Claude helper…';
     const h = await chrome.runtime.sendMessage({ type: 'bridgeHealth' }).catch((e) => ({ ok: false, error: e.message }));
     if (!h || !h.ok) { out.textContent = `Error: ${h ? h.error : 'no response'}`; return; }
-    out.textContent = `Bridge OK (${h.info.claude || 'claude found'}). Generating a sample reply, this can take 10-20 seconds…`;
+    out.textContent = `Helper OK (${h.info.claude || 'claude found'}). Generating a sample reply, this can take 10-20 seconds…`;
   } else {
     out.textContent = 'Generating a sample reply…';
   }

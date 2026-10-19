@@ -68,7 +68,7 @@
         <a class="btn btn-primary" href="#get-started">Get started</a>
         <a class="btn btn-ghost" href="README.md">Read the docs</a>
       </div>
-      <p class="note">No tracking. Your settings and keys stay in your browser.</p>
+      <p class="note">No tracking. Your API key stays in your browser. With an API key, the text being drafted is sent to Anthropic or OpenAI — see <a href="#privacy">Privacy</a>.</p>
     </div>
   </header>
 
@@ -94,7 +94,7 @@
       <div class="card"><h3>📇 Outreach from profiles</h3><p>On any profile, a <strong>Draft message</strong> button fills one of your templates — reach-out, referral ask, application, follow-up and more — word for word for that person.</p></div>
       <div class="card"><h3>🧠 Remembers context</h3><p>It keeps a short recap of your recent exchanges with each person, locally, so replies stay consistent over time. Clear it any time in Settings.</p></div>
       <div class="card"><h3>🔌 Your choice of model</h3><p>Use your Claude subscription via a helper Chrome launches on demand (no API key), or paste an Anthropic or OpenAI API key. Switch any time in Settings.</p></div>
-      <div class="card"><h3>🔒 Nothing sends itself</h3><p>The extension only writes text into the box. You always read it, edit it, and press Send. Keys and details never leave your browser.</p></div>
+      <div class="card"><h3>🔒 Nothing sends itself</h3><p>The extension only writes text into the box. You always read it, edit it, and press Send. Your API key never leaves your browser; the conversation or profile being drafted is sent to your chosen AI provider — <a href="#privacy">details below</a>.</p></div>
     </div>
   </section>
 
@@ -167,8 +167,16 @@
 
   <section class="wrap" id="privacy">
     <div class="privacy">
-      <h2>Private by design</h2>
-      <p>Your settings, API keys, profile details and remembered conversations are stored only in your browser. The extension drafts text and inserts it into the message box — it never sends messages for you. When using your Claude subscription, Chrome launches a local helper on your own machine that only the extension is allowed to call. Optionally keep your details in a git-ignored <code>config.local.js</code> so they survive a reinstall.</p>
+      <h2>Privacy &amp; what gets sent</h2>
+      <p>Your settings, API keys, profile details and remembered conversations are stored only in your browser (<code>chrome.storage.local</code>). The extension never sends messages for you — it only drafts text and inserts it into the box.</p>
+      <p><strong>To draft a reply, some data has to reach an AI model.</strong> What is sent, and to whom, depends on the provider you pick in Settings:</p>
+      <ul>
+        <li><strong>Claude subscription (default):</strong> your “About you” text and the open conversation or profile text are passed to a helper on your own machine, which runs Claude Code. Claude Code then sends that text to <strong>Anthropic</strong> under your Claude plan. Nothing goes to a server run by this extension.</li>
+        <li><strong>Anthropic API key:</strong> the same text is sent directly from your browser to <strong>Anthropic</strong> (<code>api.anthropic.com</code>).</li>
+        <li><strong>OpenAI API key:</strong> the same text is sent directly from your browser to <strong>OpenAI</strong> (<code>api.openai.com</code>).</li>
+      </ul>
+      <p>In every case the data sent includes: your “About you”/background and style text, the other person’s messages in the open thread (or the profile text for outreach), and your remembered recap of recent exchanges with that person. It does not include your API key. Review each provider’s own privacy and data-retention terms.</p>
+      <p class="note" style="margin-top:14px"><strong>API keys are stored in plaintext</strong> in <code>chrome.storage.local</code>, which is standard for Chrome extensions but means anything with access to your browser profile can read them. Prefer the Claude subscription path if you'd rather not store a key at all. Optionally keep your non-secret details in a git-ignored <code>config.local.js</code> so they survive a reinstall.</p>
     </div>
   </section>
 
@@ -178,7 +186,7 @@
     <details><summary>Does it send messages automatically?</summary><p>Never. It only writes a draft into the box. You read it, edit it, and press Send yourself — every time.</p></details>
     <details><summary>How long does a draft take?</summary><p>Roughly 5–20 seconds with Claude Code, depending on your machine and the length of the thread.</p></details>
     <details><summary>Will it make up facts about me?</summary><p>No. It only states facts written in Settings → "Background &amp; preferences", and picks skills only from your saved stack. Missing details are left as <code>[brackets]</code> or turned into a question.</p></details>
-    <details><summary>Does it remember my conversations?</summary><p>It keeps a short recap of your last few exchanges with each person — only in this browser — so new drafts stay consistent with what you said before. It's capped and never uploaded, and you can wipe it with one click in Settings → Memory.</p></details>
+    <details><summary>Does it remember my conversations?</summary><p>It keeps a short, capped recap of your last few exchanges with each person, stored only in this browser. That recap is included in the prompt sent to your AI provider (see <a href="#privacy">Privacy</a>) so new drafts stay consistent with what you said before. You can wipe it with one click in Settings → Memory.</p></details>
     <details><summary>Can I dictate instead of typing?</summary><p>Yes. Open the <strong>▾</strong> options under AI Reply and tap the <strong>🎤 mic</strong> to speak your one-off Ask; it fills the field for you. The first time, allow microphone access for LinkedIn.</p></details>
     <details><summary>The reply misread the conversation — why?</summary><p>LinkedIn may have changed its page layout. The extension then falls back to reading the raw page text around the message box; re-clicking usually gives a cleaner result.</p></details>
     <details><summary>Is this affiliated with LinkedIn or Anthropic?</summary><p>No. It's an independent project that works with your own Claude or API access.</p></details>

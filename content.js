@@ -193,6 +193,7 @@
       <a href="#" class="liai-settings">Settings</a>
     </div>
     <div class="liai-reply-out" hidden>
+      <div class="liai-warn" hidden></div>
       <label>Generated reply
         <textarea class="liai-reply-text" rows="6"></textarea>
       </label>
@@ -206,6 +207,25 @@
   const mic = pop.querySelector('.liai-mic');
   const replyOut = pop.querySelector('.liai-reply-out');
   const replyText = pop.querySelector('.liai-reply-text');
+  const warnBox = pop.querySelector('.liai-warn');
+
+  // Flag drafts that mention money or contact details, so a prompt-injection attempt
+  // (e.g. a message/profile that tries to make the draft leak your rate or number) is caught on review.
+  function sensitiveFlags(text) {
+    const t = ` ${text || ''} `;
+    const flags = [];
+    if (/\$\s?\d|\d+\s?(?:\/|per\s)?\s?(?:hr|hour|yr|year|k\b)|\b\d{2,3}\s?(?:k|K)\b|\b(?:rate|salary|w2|c2c|compensation|per hour|per year)\b/i.test(t)) flags.push('money/rate');
+    if (/\b(?:\+?\d[\d\-\s().]{7,}\d)\b/.test(t)) flags.push('phone number');
+    if (/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i.test(t)) flags.push('email address');
+    return flags;
+  }
+
+  function showFlags(text) {
+    const flags = sensitiveFlags(text);
+    if (!flags.length) { warnBox.hidden = true; warnBox.textContent = ''; return; }
+    warnBox.hidden = false;
+    warnBox.textContent = `⚠ This draft mentions ${flags.join(' and ')}. Double-check it's what you meant to share before sending.`;
+  }
 
   document.documentElement.appendChild(wrap);
   document.documentElement.appendChild(pop);
@@ -236,7 +256,7 @@
 
   let timer = null;
   function show(editor) {
-    if (editor !== cur) { replyOut.hidden = true; replyText.value = ''; }
+    if (editor !== cur) { replyOut.hidden = true; replyText.value = ''; warnBox.hidden = true; warnBox.textContent = ''; }
     cur = editor;
     wrap.hidden = false;
     position();
@@ -283,6 +303,7 @@
       lastGenerated.set(editor, squash(editor.value || editor.innerText));
       // Show the generated reply in the panel so you can review, edit, copy or re-insert it.
       replyText.value = res.text;
+      showFlags(res.text);
       replyOut.hidden = false;
       pop.hidden = false;
     } catch (e) {
@@ -357,6 +378,7 @@
   });
   pop.querySelector('.liai-copy-reply').addEventListener('click', (e) => { e.preventDefault(); copyText(replyText.value, e.target); });
   replyText.addEventListener('keydown', (e) => e.stopPropagation());
+  replyText.addEventListener('input', () => showFlags(replyText.value));
   instr.addEventListener('keydown', (e) => {
     e.stopPropagation();
     if (e.key === 'Enter') { e.preventDefault(); run(); }

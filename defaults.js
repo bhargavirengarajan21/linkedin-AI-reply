@@ -3,8 +3,7 @@
 // them in a git-ignored config.local.js (see config.local.example.js) which is merged
 // in below. config.local.js is loaded before this file.
 const DEFAULT_SETTINGS = Object.assign({
-  provider: 'claudecode', // 'claudecode' (your Claude subscription, via local bridge) | 'anthropic' | 'openai'
-  bridgeUrl: 'http://127.0.0.1:3917',
+  provider: 'claudecode', // 'claudecode' (your Claude subscription, via the native-messaging helper) | 'anthropic' | 'openai'
   claudeCodeModel: 'sonnet', // alias passed to `claude --model` (sonnet, opus, haiku) or a full model name; blank = Claude Code default
   anthropicKey: '',
   anthropicModel: 'claude-sonnet-5-5',

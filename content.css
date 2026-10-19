@@ -65,6 +65,12 @@
 @keyframes liai-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 
 .liai-reply-out { margin-top: 12px; border-top: 1px solid #e0e0e0; padding-top: 10px; }
+.liai-warn {
+  font: 600 12px/1.4 -apple-system, system-ui, sans-serif; color: #7a3b00;
+  background: #fff4e5; border: 1px solid #f2c48a; border-radius: 6px;
+  padding: 6px 9px; margin-bottom: 8px;
+}
+.liai-warn[hidden] { display: none; }
 .liai-reply-out textarea {
   display: block; width: 100%; box-sizing: border-box; margin-top: 4px; padding: 6px 8px; resize: vertical;
   font: 13px/1.4 -apple-system, system-ui, sans-serif; color: #1d2226; background: #fff;
