@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "LinkedIn AI Reply",
+  "name": "AI Reply Drafts for LinkedIn",
   "version": "1.2.3",
   "description": "Drafts AI replies to your LinkedIn messages and outreach messages from profiles, using your Claude subscription (via Claude Code) or an API key. You review and send.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtgnkxOpxPFVuL2nwyT5xMi5xTJz67Q9KR6JBnbXeo5t1x1ajNw6kJPuOs4urabmNXW0Kx/PTKUruZ+H8IEqStxH3PLQqe7Bpi49QkXMgf/Za/7w5n1XIxNdGC/l/a2rCuHsKwmMqEnvOTium3f7hUEKL8wHYig6UPJ/dQ1HptNlEg70bky+RaDytltyD8+vqbZM6bHxfLD1tFABxlhujVT8nBpGZdKccm+2tUhSfQQFYo0c5nXCjCU5CzTysr+UwL1rLWO3WMxSoRXbSXZt2Nt9+56YwLw2pJdvy9njqmL2jqEuyApgx1tUhXpDSJNbq/WwsiYHftH0hO25kPpSQFwIDAQAB",
@@ -45,7 +45,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "LinkedIn AI Reply \u2013 settings",
+    "default_title": "AI Reply Drafts for LinkedIn \u2013 settings",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
