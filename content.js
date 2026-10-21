@@ -2,7 +2,7 @@
   'use strict';
   if (window.__liaiLoaded) return;
   window.__liaiLoaded = true;
-  console.log('[LinkedIn AI Reply] content script loaded (v1.2.3 — voice + memory + reply panel)');
+  console.log('[LinkedIn AI Reply] content script loaded (v1.2.4 — voice + memory + reply panel)');
 
   // Known LinkedIn message classes. Used when present; there is a generic fallback when they change.
   const SEL = {

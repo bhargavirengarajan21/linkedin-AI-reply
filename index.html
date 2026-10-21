@@ -60,7 +60,7 @@
 <body>
   <header class="hero">
     <div class="wrap">
-      <span class="badge">Chrome extension · Manifest V3 · v1.2.3</span>
+      <span class="badge">Chrome extension · Manifest V3 · v1.2.4</span>
       <h1>Draft LinkedIn replies &amp; outreach with AI.<br><span>You review and hit Send.</span></h1>
       <p class="sub">A floating button on LinkedIn messages and profiles drafts a reply or a tailored outreach message in seconds — using your Claude subscription or your own API key. It never sends anything on its own.</p>
       <div class="cta">
@@ -154,8 +154,10 @@
         <p>Install it from <a href="https://code.claude.com/docs/en/setup" target="_blank">code.claude.com</a>, open a terminal, run <code>claude</code> once and sign in with your Claude account. Prefer an API key instead? Skip to step 4.</p></li>
       <li><strong>Install Node.js.</strong>
         <p>Grab the LTS build from <a href="https://nodejs.org" target="_blank">nodejs.org</a> if <code>node -v</code> doesn't already print a version. The local helper needs it.</p></li>
+      <li><strong>Download the extension.</strong>
+        <p>Get it from <a href="https://github.com/bhargavirengarajan21/linkedin-AI-reply" target="_blank">github.com/bhargavirengarajan21/linkedin-AI-reply</a> &mdash; click <strong>Code &rarr; Download ZIP</strong>, then unzip it to a folder you'll keep.</p></li>
       <li><strong>Load the extension.</strong>
-        <p>Open <code>chrome://extensions</code>, turn on <strong>Developer mode</strong>, click <strong>Load unpacked</strong>, and pick the folder that directly contains <code>manifest.json</code>. On first install, this page opens automatically.</p></li>
+        <p>Open <code>chrome://extensions</code>, turn on <strong>Developer mode</strong>, click <strong>Load unpacked</strong>, and pick the unzipped folder that directly contains <code>manifest.json</code>. On first install, this page opens automatically.</p></li>
       <li><strong>Register the helper (once).</strong>
         <p>Double-click <code>nativehost\install.bat</code> once. That's it — Chrome then <strong>launches Claude on demand</strong>, with no window to keep open and nothing running in the background. Prefer an API key? Skip this step entirely.</p></li>
       <li><strong>Tell it about you.</strong>

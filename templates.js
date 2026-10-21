@@ -22,6 +22,24 @@ const LIAI_TEMPLATES = {
       'Would you be open to [specific, low-effort ask]?'
     ]
   },
+  reconnect: {
+    label: 'Reconnect (LinkedIn DM)',
+    email: false,
+    body: [
+      'Hi [Name],',
+      'I’m [who you are].',
+      '[Why you’re reaching out — specific to them].',
+      'Would you be open to [specific, low-effort ask]?'
+    ]
+  },
+  congrats: {
+    label: 'Congratulate (LinkedIn DM)',
+    email: false,
+    body: [
+      'Hi [Name],',
+      '[Why you’re reaching out — specific to them].'
+    ]
+  },
   referral: {
     label: 'Referred by someone',
     email: true,

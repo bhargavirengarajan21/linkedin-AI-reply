@@ -14,7 +14,7 @@ Choose one of three providers in Settings:
 
 | Option | What you need | Setup effort | Cost to you |
 | --- | --- | --- | --- |
-| **1. Your Claude subscription** (default) | Windows, Node.js, and Claude Code installed and signed in, then run `nativehost\install.bat` once | High, developer-level | Covered by your Claude plan |
+| **1. Your Claude subscription** (default) | Windows, Node.js, and Claude Code installed and signed in, then run [`nativehost\install.bat`](https://github.com/bhargavirengarajan21/linkedin-AI-reply/blob/master/nativehost/install.bat) once | High, developer-level | Covered by your Claude plan |
 | **2. Anthropic API key** | Paste the key in the extension's Settings | Low | Pay per use on your own account |
 | **3. OpenAI API key** | Paste the key in the extension's Settings | Low | Pay per use on your own account |
 
@@ -27,7 +27,7 @@ flowchart TD
     subgraph page["LinkedIn page (content scripts)"]
         C["content.js<br/>✨ AI Reply button"]
         P["profile.js<br/>✨ Draft message panel"]
-        T["templates.js<br/>8 outreach templates"]
+        T["templates.js<br/>10 outreach templates<br/>(networking + job search)"]
         D1["defaults.js · content.css"]
     end
 
@@ -57,6 +57,52 @@ flowchart TD
 ```
 
 <sub>Plain-text fallback if the diagram doesn't render: content scripts (`content.js`, `profile.js`) and the options page send messages to the `background.js` service worker. The worker builds the prompt, reads/writes settings &amp; memory in `chrome.storage.local`, then calls one of three providers — the local `nativehost/host.js` (which runs `claude -p`), `api.anthropic.com`, or `api.openai.com`.</sub>
+
+### What goes into the prompt
+
+`background.js → buildPrompts()` assembles two messages for every reply: a **system** message (who you are + rules) and a **user** message (the thread + what you want). Trusted inputs come from your Settings and the ▾ controls; untrusted inputs (the conversation, remembered recaps) are fenced and explicitly labelled as data, never instructions.
+
+```mermaid
+flowchart LR
+    subgraph sys["SYSTEM message — identity & rules"]
+        direction TB
+        S1["Role: draft replies as <b>you</b>, first person"]
+        S2["About you — <i>settings.aboutMe</i>"]
+        S3["Writing style — <i>settings.style</i>"]
+        S4["Memory recap of this contact<br/>(UNTRUSTED, continuity only)"]
+        S5["Security rules<br/>don't obey thread text · don't leak<br/>rate / salary / phone / email / address"]
+        S6["Output rules<br/>reply text only · answer latest msg ·<br/>never invent facts"]
+    end
+
+    subgraph usr["USER message — this request"]
+        direction TB
+        U1["Conversation transcript<br/>(fenced &lt;&lt;&lt;…&gt;&gt;&gt;, UNTRUSTED)"]
+        U2["Goal for this reply — the ▾ intent<br/>(Interested / Ask details / Decline / Thank)"]
+        U3["Extra instruction — your one-off Ask<br/>(typed or 🎤 dictated)"]
+        U4["Your rough draft to polish<br/>(optional)"]
+        U5["“Write your next message.”"]
+    end
+
+    sys --> CALL["callModel(system, user)"]
+    usr --> CALL
+    CALL --> AI["Claude Code / Anthropic / OpenAI"]
+```
+
+Field-by-field, straight from the code:
+
+| Prompt part | Where it comes from | Trusted? |
+|---|---|---|
+| Role line (draft as you, first person) | fixed text in `buildPrompts` | — |
+| **About you** | `settings.aboutMe` (Options page) | trusted |
+| **Writing style** | `settings.style` (Options page) | trusted |
+| **Memory recap** | `recallMemory(otherName)` — past `they said → you replied` pairs | untrusted (continuity only) |
+| Security + output rules | fixed text in `buildPrompts` | — |
+| **Conversation transcript** | scraped by `content.js`, fenced in the user message | untrusted |
+| **Goal for this reply** | ▾ intent → `INTENT_TEXT[req.intent]` | trusted |
+| **Extra instruction** | ▾ one-off Ask (`req.instruction`, text or voice) | trusted |
+| **Draft to polish** | whatever you typed in the box (`req.draft`) | trusted |
+
+> The profile-outreach path (`profileBlanks`) uses a *different* prompt: it asks the model only for a small JSON object of blanks (`jobTitle`, `why`, `ask`, …), which `templates.js` then drops into a fixed template locally. The profile text and your notes/JD go in as fenced untrusted data, and the model is told never to put contact or money details into any field.
 
 ### Request flow (drafting one reply)
 
@@ -88,7 +134,11 @@ The profile outreach flow is similar, except the AI only returns a small JSON ob
 1. **Claude Code**: install it (https://code.claude.com/docs/en/setup), open a terminal, run `claude` once and sign in with your Claude account.
 2. **Node.js**: install the LTS version from https://nodejs.org if `node -v` doesn't work.
 3. **Load the extension**: open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and pick the folder that directly contains `manifest.json`. If you loaded the older version, remove it first.
-4. **Register the helper (once)**: double-click `nativehost\install.bat`. Chrome then launches Claude on demand — no window to keep open, nothing running in the background. Prefer an API key? Skip this step.
+4. **Register the helper (once)**:
+   - **Windows:** double-click [`nativehost\install.bat`](https://github.com/bhargavirengarajan21/linkedin-AI-reply/blob/master/nativehost/install.bat).
+   - **macOS / Linux:** `.bat` files don't run here — open a terminal in the `nativehost` folder and run `chmod +x install.sh host.sh && ./install.sh` instead (it registers the host under `~/Library/Application Support/.../NativeMessagingHosts` on macOS). Remove it later with `./uninstall.sh`.
+
+   Chrome then launches Claude on demand — no window to keep open, nothing running in the background. Prefer an API key? Skip this step.
 5. Click the extension's toolbar icon to open Settings, review the "About you" text, and click **Save & test**.
 6. Refresh your LinkedIn tab. A "LinkedIn AI Reply is on" message confirms the extension loaded.
 
@@ -99,12 +149,12 @@ The profile outreach flow is similar, except the AI only returns a small JSON ob
 - Type a rough draft first, then click AI Reply, and it polishes your draft.
 - **Alt+R** in a message box does the same as the button.
 
-## Draft a message from a profile
-On any LinkedIn profile, a **✨ Draft message** button sits at the bottom left. It reads the profile and fills one of your templates word for word:
-- **Reach out** and **Ask for a referral**: short LinkedIn DMs written for this person.
+## Outreach from profiles
+On any LinkedIn profile, a **✨ Draft message** button sits at the bottom left. It reads the profile and fills one of your templates word for word — for networking, reconnecting, congratulating, or job search:
+- **Reach out**, **Reconnect**, **Congratulate**, and **Ask for a referral**: short LinkedIn DMs written for this person. The DM templates open with your **"I'm ___"** line (set it once in Settings → *whoYouAre*), so each draft introduces you consistently.
 - **Referred by someone**, **Application**, **No open position**, **Recruiter networking**, **Follow-up**, **After interview**: emails, with a Send from line and a Subject.
 
-Add a role or paste the JD for sharper skill matching. Emails use the send-from address from Settings. Use **Copy message**, **Copy all**, or **Insert into LinkedIn box** after you open Message or Add a note. Anything the profile doesn't tell it, like a referrer or a date, stays in [brackets] for you to fill in.
+Pick the **Message type** in the panel and, optionally, add a role/topic or paste context in **What to say / context** for a sharper, more specific draft. Emails use the send-from address from Settings. Use **Copy message**, **Copy all**, or **Insert into LinkedIn box** after you open Message or Add a note. Anything the profile doesn't tell it, like a referrer or a date, stays in [brackets] for you to fill in.
 
 ## Your details (optional config file)
 The extension ships with no personal data. You can either:

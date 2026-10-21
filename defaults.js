@@ -12,9 +12,9 @@ const DEFAULT_SETTINGS = Object.assign({
   myName: '',
   aboutMe: [
     'Add a few lines about yourself so replies can introduce you accurately.',
-    'For example: your role and years of experience, your main tech stack, your location.',
+    'For example: what you do, your background or focus areas, and your location.',
     '',
-    'Add your preferences here so replies can answer recruiter questions: remote/hybrid, locations, W2/C2C/FTE, rate or salary expectations, availability for calls, notice period.'
+    'Add any preferences you want replies to rely on — how you like to be contacted, availability for a call, and (for job search) remote/hybrid, locations, employment type, rate or salary expectations, notice period.'
   ].join('\n'),
   whoYouAre: '', // the "I'm ___" line used in Reach out / Ask for a referral
   targetRole: '', // default role for No open position / Recruiter when none is given

@@ -1,7 +1,7 @@
 # Chrome Web Store listing — copy/paste
 
 Paste each block into the matching field in the Developer Dashboard draft for
-`dist/linkedin-ai-reply-v1.2.3.zip`. Fields are grouped by dashboard tab.
+`dist/linkedin-ai-reply-v1.2.4.zip`. Fields are grouped by dashboard tab.
 
 ---
 
@@ -36,6 +36,9 @@ The conversation text is treated as untrusted and the model is told to ignore an
 instructions hidden inside it. Every draft that mentions money or contact details
 is flagged for your review.
 
+**YouTube video** (optional)
+https://www.youtube.com/watch?v=H3J-Ux9NG-o
+
 **Category**
 Social & Communication  (alternative: Productivity)
 
@@ -65,6 +68,15 @@ Claude Code. This lets users who already pay for Claude draft replies without
 pasting an API key. The helper is launched on demand and is not bundled or
 auto-installed by the store; the API-key paths do not use this permission at all.
 
+**Are you using remote code?**  → Select **"No, I am not using remote code."**
+Justification (if a text box is shown):
+The extension executes no remotely hosted code. All JavaScript is bundled in the
+package. The extension only sends the user's request to an AI API and receives
+plain text back (the drafted message) — it never fetches, evaluates, or injects
+code from a remote source. The optional nativeMessaging path launches a program
+the user already installed locally (Claude Code); no remote code is downloaded or
+run.
+
 `host_permissions: https://api.anthropic.com/*`
 Used only when the user selects the "Anthropic API key" provider, to send the
 draft request directly from the browser to the Anthropic API with the user's own
@@ -91,8 +103,7 @@ message box. The extension runs on LinkedIn only.
   the requested draft; it is not stored on any server run by this extension.
 
 **Privacy policy URL**
-<REQUIRED — you must host a privacy policy and paste the URL here. See PRIVACY_POLICY.md,
-which you can publish e.g. as a GitHub Pages page or a Gist and link.>
+https://github.com/bhargavirengarajan21/linkedin-AI-reply/blob/master/PRIVACY_POLICY.md
 
 ---
 
