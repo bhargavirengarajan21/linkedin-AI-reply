@@ -38,24 +38,20 @@ function showTab(tab) {
 async function renderFreeTierAlert() {
   const box = $('freeTierAlert');
   if (!box) return;
-  const base = ($('hostedUrl').value || '').trim().replace(/\/+$/, '');
 
   // Defaults mirror the server's out-of-the-box per-IP budget; overwritten by live data.
   let reqLimit = 20, tokLimit = 40000, maxPerReply = 600;
   let reqUsed = null, tokUsed = null, resetHrs = null, live = false;
 
-  if (base) {
-    try {
-      const res = await fetch(`${base}/usage`);
-      const d = await res.json().catch(() => ({}));
-      if (res.ok && d.ok) {
-        reqLimit = d.requests.limit; tokLimit = d.tokens.limit;
-        reqUsed = d.requests.used; tokUsed = d.tokens.used;
-        maxPerReply = d.maxTokensPerReply || maxPerReply;
-        resetHrs = Math.max(1, Math.round((d.resetsInSeconds || 0) / 3600));
-        live = true;
-      }
-    } catch (_) { /* fall back to static math below */ }
+  // Fetch live usage via the background worker (page-origin fetch would be blocked by CORS).
+  const r = await chrome.runtime.sendMessage({ type: 'hostedFetch', path: '/usage' }).catch(() => null);
+  if (r && r.ok && r.httpOk && r.body && r.body.ok) {
+    const d = r.body;
+    reqLimit = d.requests.limit; tokLimit = d.tokens.limit;
+    reqUsed = d.requests.used; tokUsed = d.tokens.used;
+    maxPerReply = d.maxTokensPerReply || maxPerReply;
+    resetHrs = Math.max(1, Math.round((d.resetsInSeconds || 0) / 3600));
+    live = true;
   }
 
   const avg = Math.round(tokLimit / reqLimit);
@@ -73,7 +69,7 @@ async function renderFreeTierAlert() {
     `Please use it sparingly, or add your own key above to lift the limit.</p>` +
     (live
       ? `<p>Usage on your network today (resets in ~${resetHrs}h, midnight UTC):</p>`
-      : `<p>Enter the hosted service URL above and it will show your network's live usage here. ` +
+      : `<p>Couldn't reach the hosted service right now, so live usage isn't shown. ` +
         `The default per-network budget is:</p>`) +
     usageRow('Requests', reqUsed, reqLimit) +
     usageRow('Tokens', tokUsed, tokLimit) +
@@ -164,25 +160,22 @@ async function checkLimits() {
   const out = $('limitsOut');
   out.style.display = 'block';
   const setStatus = (txt) => { const p = $('hostedStatus'); if (p) p.textContent = txt; };
-  const base = ($('hostedUrl').value || '').trim().replace(/\/+$/, '');
-  if (!base) { out.textContent = 'Enter the hosted service URL above first.'; return; }
   out.textContent = 'Checking the hosted service…';
-  try {
-    const res = await fetch(`${base}/health`);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.ok) { out.textContent = `Service error ${res.status}. Check the URL.`; setStatus('Not connected'); return; }
-    setStatus('Connected');
-    const lim = data.limits || {};
-    const reqs = lim.requestsPerDay != null ? `${lim.requestsPerDay} requests` : 'a request limit';
-    const toks = lim.tokensPerDay != null ? `${Number(lim.tokensPerDay).toLocaleString()} tokens` : 'a token limit';
-    out.innerHTML =
-      `✓ Connected. Free tier: <b>${reqs}</b> and <b>${toks}</b> per network per day, resets midnight UTC.` +
-      `<br>Powered by <b>${data.provider || 'the configured provider'}</b>` +
-      (data.model ? ` (model <code>${data.model}</code>)` : '') + '.';
-  } catch (_) {
-    out.textContent = 'Could not reach the hosted service. Check the URL or try again later.';
-    setStatus('Not connected');
-  }
+  // Route through the background service worker — a fetch straight from this page is blocked
+  // by CORS, but the worker's request uses the extension's host_permissions and isn't.
+  const r = await chrome.runtime.sendMessage({ type: 'hostedFetch', path: '/health' })
+    .catch((e) => ({ ok: false, error: e.message }));
+  if (!r || !r.ok) { out.textContent = 'Could not reach the hosted service. Try again later.'; setStatus('Not connected'); return; }
+  const data = r.body || {};
+  if (!r.httpOk || !data.ok) { out.textContent = `Service error ${r.status}. Try again later.`; setStatus('Not connected'); return; }
+  setStatus('Connected');
+  const lim = data.limits || {};
+  const reqs = lim.requestsPerDay != null ? `${lim.requestsPerDay} requests` : 'a request limit';
+  const toks = lim.tokensPerDay != null ? `${Number(lim.tokensPerDay).toLocaleString()} tokens` : 'a token limit';
+  out.innerHTML =
+    `✓ Connected. Free tier: <b>${reqs}</b> and <b>${toks}</b> per network per day, resets midnight UTC.` +
+    `<br>Powered by <b>${data.provider || 'the configured provider'}</b>` +
+    (data.model ? ` (model <code>${data.model}</code>)` : '') + '.';
 }
 
 async function showMemCount() {

@@ -53,10 +53,6 @@ const GUARDRAIL = [
 const REQUESTS_PER_DAY = numEnv('DAILY_REQUEST_LIMIT', 20);
 const TOKENS_PER_DAY = numEnv('DAILY_TOKEN_LIMIT', 40000);
 
-// Comma-separated allowlist of extension origins (chrome-extension://<id>). Empty = allow any.
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
-  .split(',').map((s) => s.trim()).filter(Boolean);
-
 if (!API_KEY) {
   console.error('No API key set. Provide ANTHROPIC_API_KEY or OPENAI_API_KEY in the environment.');
   process.exit(1);
@@ -74,10 +70,11 @@ const app = express();
 app.set('trust proxy', true);
 
 app.use(express.json({ limit: '256kb' }));
-app.use(cors({
-  origin: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : true,
-  methods: ['POST', 'GET']
-}));
+// Allow any origin. This is a public free-tier proxy whose real protection is the per-IP
+// daily budget below, not CORS — and the extension's origin (chrome-extension://<id>) varies
+// per install, so an allowlist just breaks legitimate users. `cors()` with no options sends
+// Access-Control-Allow-Origin: * and handles preflight OPTIONS automatically.
+app.use(cors());
 
 function clientIp(req) {
   // req.ip respects trust proxy; strip IPv6-mapped IPv4 prefix for cleaner keys.

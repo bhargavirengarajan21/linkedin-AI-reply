@@ -160,14 +160,14 @@
 <div class="app">
   <header class="topbar">
     <div class="brand">LinkedIn <span class="mark">AI Reply</span></div>
-    <div class="eyebrow">SETTINGS</div>
   </header>
 
   <div class="body">
     <aside class="sidebar">
       <div class="ws-label">YOUR WORKSPACE</div>
       <nav class="nav">
-        <button class="nav-item active" data-tab="profile">Profile &amp; writing style</button>
+        <button class="nav-item active" data-tab="connection">Connection</button>
+        <button class="nav-item" data-tab="profile">Profile &amp; writing style</button>
         <button class="nav-item" data-tab="advanced">Advanced</button>
       </nav>
       <div class="foot">Draft with AI.<br>Send with confidence.</div>
@@ -176,8 +176,8 @@
     <section class="content">
       <div class="scroll">
 
-        <!-- ============ CONNECTION (hidden: free hosted is built in and auto-connects) ============ -->
-        <div class="page" data-page="connection" hidden>
+        <!-- ============ CONNECTION ============ -->
+        <div class="page" data-page="connection">
           <div class="page-head">
             <h1>Connection</h1>
             <p>Choose how your replies are generated. You always review and send them yourself.</p>
@@ -286,7 +286,7 @@
         </div>
 
         <!-- ============ PROFILE & WRITING STYLE ============ -->
-        <div class="page" data-page="profile">
+        <div class="page" data-page="profile" hidden>
           <div class="page-head">
             <h1>Profile &amp; writing style</h1>
             <p>Give your replies the right context and make them sound like you.</p>

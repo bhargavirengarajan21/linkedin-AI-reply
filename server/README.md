@@ -51,8 +51,9 @@ Any Node 18+ host works (Render, Railway, Fly.io, a VPS, etc.). Set the env vars
    `"https://your-backend.example.com/*"`. MV3 requires this to be declared statically;
    without it the service worker's `fetch` is blocked. (`http://localhost:8787/*` is already
    there for local dev.)
-2. Optionally set `ALLOWED_ORIGINS` to your published extension id
-   (`chrome-extension://<id>`) so only your extension can call the backend.
+
+CORS is open to any origin — the extension's `chrome-extension://<id>` origin varies per
+install, and the real protection is the per-IP daily budget, not CORS.
 
 ## Configuration
 
@@ -64,7 +65,6 @@ Any Node 18+ host works (Render, Railway, Fly.io, a VPS, etc.). Set the env vars
 | `MAX_TOKENS` | `600` | max tokens generated per reply |
 | `DAILY_REQUEST_LIMIT` | `20` | per-IP requests per day |
 | `DAILY_TOKEN_LIMIT` | `40000` | per-IP tokens per day |
-| `ALLOWED_ORIGINS` | *(any)* | comma-separated `chrome-extension://` allowlist |
 | `PORT` | `8787` | listen port (most hosts set this) |
 
 ## Note on the in-memory limiter

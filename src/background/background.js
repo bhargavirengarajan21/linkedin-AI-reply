@@ -39,6 +39,15 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       .catch((err) => sendResponse({ ok: false, error: err.message || String(err) }));
     return true;
   }
+  if (msg && msg.type === 'hostedFetch') {
+    // Read-only /health and /usage checks for the options page. Done here in the service
+    // worker (not from the page) so the request uses the extension's host_permissions and
+    // isn't blocked by CORS the way a page-origin fetch is.
+    hostedFetch(msg.path)
+      .then((r) => sendResponse({ ok: true, ...r }))
+      .catch((err) => sendResponse({ ok: false, error: err.message || String(err) }));
+    return true;
+  }
   if (msg && msg.type === 'openOptions') {
     chrome.runtime.openOptionsPage();
   }
@@ -245,6 +254,23 @@ async function bridgeHealth() {
 // ---------- Free hosted backend (owner's key, rate-limited per IP) ----------
 // The model and API key live on the server; the browser only sends system/user text.
 // The per-IP daily limit is enforced server-side, so it can't be bypassed from here.
+// Read-only GET to the hosted backend's /health or /usage, run from the service worker so
+// host_permissions apply and CORS doesn't block it (a page-origin fetch would be blocked).
+async function hostedFetch(path) {
+  const s = await chrome.storage.local.get(DEFAULT_SETTINGS);
+  const base = (s.hostedUrl || DEFAULT_SETTINGS.hostedUrl || '').trim().replace(/\/+$/, '');
+  if (!base) throw new Error('No hosted backend URL set.');
+  const safe = path === '/usage' ? '/usage' : '/health'; // only these two are allowed
+  let res;
+  try {
+    res = await fetch(`${base}${safe}`);
+  } catch (_) {
+    throw new Error('Could not reach the free hosted service. Try again later.');
+  }
+  const body = await res.json().catch(() => ({}));
+  return { status: res.status, httpOk: res.ok, body };
+}
+
 async function callHosted(s, system, user) {
   const base = (s.hostedUrl || DEFAULT_SETTINGS.hostedUrl || '').trim().replace(/\/+$/, '');
   if (!base) throw new Error('No hosted backend URL set. Click here to open settings.');
