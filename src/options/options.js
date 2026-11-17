@@ -16,7 +16,7 @@ function showProvider() {
       flag.textContent = on ? 'Selected' : '';
     }
   });
-  if (p === 'hosted') renderFreeTierAlert();
+  if (p === 'hosted') { renderFreeTierAlert(); checkLimits(); }
 }
 
 function selectProvider(p) {

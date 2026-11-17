@@ -246,7 +246,7 @@ async function bridgeHealth() {
 // The model and API key live on the server; the browser only sends system/user text.
 // The per-IP daily limit is enforced server-side, so it can't be bypassed from here.
 async function callHosted(s, system, user) {
-  const base = (s.hostedUrl || '').trim().replace(/\/+$/, '');
+  const base = (s.hostedUrl || DEFAULT_SETTINGS.hostedUrl || '').trim().replace(/\/+$/, '');
   if (!base) throw new Error('No hosted backend URL set. Click here to open settings.');
   let res;
   try {

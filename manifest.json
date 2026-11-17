@@ -11,6 +11,7 @@
   "host_permissions": [
     "https://api.anthropic.com/*",
     "https://api.openai.com/*",
+    "https://linkedin-ai-reply-jpyk.onrender.com/*",
     "http://localhost:8787/*"
   ],
   "background": {

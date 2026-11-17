@@ -167,8 +167,7 @@
     <aside class="sidebar">
       <div class="ws-label">YOUR WORKSPACE</div>
       <nav class="nav">
-        <button class="nav-item active" data-tab="connection">Connection</button>
-        <button class="nav-item" data-tab="profile">Profile &amp; writing style</button>
+        <button class="nav-item active" data-tab="profile">Profile &amp; writing style</button>
         <button class="nav-item" data-tab="advanced">Advanced</button>
       </nav>
       <div class="foot">Draft with AI.<br>Send with confidence.</div>
@@ -177,8 +176,8 @@
     <section class="content">
       <div class="scroll">
 
-        <!-- ============ CONNECTION ============ -->
-        <div class="page" data-page="connection">
+        <!-- ============ CONNECTION (hidden: free hosted is built in and auto-connects) ============ -->
+        <div class="page" data-page="connection" hidden>
           <div class="page-head">
             <h1>Connection</h1>
             <p>Choose how your replies are generated. You always review and send them yourself.</p>
@@ -262,11 +261,8 @@
                 <h2>Connect your hosted service</h2>
                 <span class="pill" id="hostedStatus">Not connected</span>
               </div>
-              <p class="card-sub">Enter the service address provided by your extension administrator.</p>
-              <div class="field">
-                <label>Hosted service URL</label>
-                <input id="hostedUrl" type="text" placeholder="https://your-backend.example.com">
-              </div>
+              <p class="card-sub">The free hosted service is built in — no setup needed. The extension connects to it automatically.</p>
+              <input id="hostedUrl" type="hidden">
               <div class="btn-row">
                 <button id="checkLimits" class="btn btn-ghost" type="button">Test connection</button>
                 <span class="filehint">Check availability and current usage.</span>
@@ -290,7 +286,7 @@
         </div>
 
         <!-- ============ PROFILE & WRITING STYLE ============ -->
-        <div class="page" data-page="profile" hidden>
+        <div class="page" data-page="profile">
           <div class="page-head">
             <h1>Profile &amp; writing style</h1>
             <p>Give your replies the right context and make them sound like you.</p>

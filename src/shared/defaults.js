@@ -5,7 +5,7 @@
 const DEFAULT_SETTINGS = Object.assign({
   provider: 'hosted', // 'hosted' (free, no key — default) | 'claudecode' (your Claude subscription, via the native-messaging helper) | 'anthropic' | 'openai'
   claudeCodeModel: 'opus', // alias passed to `claude --model` (sonnet, opus, haiku) or a full model name; blank = Claude Code default
-  hostedUrl: '', // base URL of the free hosted backend (server/). Model + key live on the server; this is the only client setting.
+  hostedUrl: 'https://linkedin-ai-reply-jpyk.onrender.com', // base URL of the free hosted backend (server/). Baked in so the free tier connects automatically; model + key live on the server.
   anthropicKey: '',
   anthropicModel: 'claude-opus-4-8',
   openaiKey: '',
