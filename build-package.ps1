@@ -9,18 +9,21 @@ $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
 
 # --- files that make up the shipped extension (relative paths) ---
+# Paths match the src/ layout the code was reorganized into; they must stay in sync
+# with manifest.json. config.local.js is intentionally absent here — it's written as an
+# empty stub below so the private one can never leak into the zip.
 $include = @(
   'manifest.json',
-  'background.js',
-  'content.js',
-  'content.css',
-  'defaults.js',
-  'templates.js',
-  'profile.js',
-  'options.html',
-  'options.js',
-  'config.local.example.js',
-  'index.html',
+  'src/background/background.js',
+  'src/content/content.js',
+  'src/content/content.css',
+  'src/content/profile.js',
+  'src/content/templates.js',
+  'src/options/options.html',
+  'src/options/options.js',
+  'src/pages/index.html',
+  'src/shared/defaults.js',
+  'src/shared/config.local.example.js',
   'README.md',
   'icons/icon16.png',
   'icons/icon32.png',
@@ -28,12 +31,16 @@ $include = @(
   'icons/icon128.png',
   'nativehost/host.js',
   'nativehost/host.bat',
+  'nativehost/host.sh',
   'nativehost/install.bat',
-  'nativehost/uninstall.bat'
+  'nativehost/install.sh',
+  'nativehost/uninstall.bat',
+  'nativehost/uninstall.sh'
 )
-# NOT packaged: config.local.js (private), nativehost/manifest.json (generated per-machine
-# by install.bat), nativehost-private-key.pem (private), bridge/ (replaced by native messaging),
-# .gitignore, build-package.ps1, dist/ — none are part of the shipped extension.
+# NOT packaged: src/shared/config.local.js (private — shipped as an empty stub instead),
+# nativehost/manifest.json (generated per-machine by install), nativehost/test-host.js (dev-only),
+# nativehost-private-key.pem (private), .gitignore, build-package.ps1, dist/, server/ (the hosted
+# backend, deployed separately) — none are part of the shipped extension.
 
 # --- staging dir ---
 $stage = Join-Path $root 'dist/_stage'
@@ -63,13 +70,15 @@ $mf = $mf -replace '(?m)^\s*"key":\s*"[^"]*",\r?\n', ''
 Set-Content -Path $mfPath -Value $mf -NoNewline -Encoding utf8
 
 # --- write an EMPTY config.local.js stub (never the real one) ---
+$stubPath = Join-Path $stage 'src/shared/config.local.js'
+New-Item -ItemType Directory -Path (Split-Path $stubPath -Parent) -Force | Out-Null
 $stub = "// Empty stub shipped with the public build. Users add their own details`r`n" +
         "// via the Settings page, or by creating their own config.local.js.`r`n" +
         "const LIAI_LOCAL_CONFIG = {};`r`n"
-Set-Content -Path (Join-Path $stage 'config.local.js') -Value $stub -NoNewline -Encoding utf8
+Set-Content -Path $stubPath -Value $stub -NoNewline -Encoding utf8
 
 # --- safety check: the staged config.local.js must be the empty stub ---
-$staged = Get-Content (Join-Path $stage 'config.local.js') -Raw
+$staged = Get-Content $stubPath -Raw
 if ($staged -match 'emailPersonal|@gmail|LIAI_LOCAL_CONFIG\s*=\s*\{[^}]*\w') {
   throw "Aborting: staged config.local.js is not the empty stub. Build cancelled to protect your data."
 }
@@ -86,4 +95,4 @@ Remove-Item $stage -Recurse -Force
 $size = [math]::Round((Get-Item $zip).Length / 1KB, 1)
 Write-Host ("Built {0} ({1} KB)" -f $zip, $size) -ForegroundColor Green
 Write-Host "Packaged files:" -ForegroundColor Cyan
-$include + 'config.local.js (empty stub)' | ForEach-Object { Write-Host "  $_" }
+$include + 'src/shared/config.local.js (empty stub)' | ForEach-Object { Write-Host "  $_" }

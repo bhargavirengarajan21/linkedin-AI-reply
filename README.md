@@ -17,6 +17,29 @@ Choose one of three providers in Settings:
 | **1. Your Claude subscription** (default) | Windows, Node.js, and Claude Code installed and signed in, then run [`nativehost\install.bat`](https://github.com/bhargavirengarajan21/linkedin-AI-reply/blob/master/nativehost/install.bat) once | High, developer-level | Covered by your Claude plan |
 | **2. Anthropic API key** | Paste the key in the extension's Settings | Low | Pay per use on your own account |
 | **3. OpenAI API key** | Paste the key in the extension's Settings | Low | Pay per use on your own account |
+| **4. Free hosted (my API key)** | Nothing — works out of the box, subject to a daily limit | None | Free, rate-limited per IP address |
+
+## Free version (hosted, no setup)
+
+If you don't want to install anything or bring your own key, you can use the **free hosted option**. In this mode the request goes to a small backend I run, and **I provide the Anthropic/OpenAI API key** so you don't have to.
+
+Because I pay for those tokens, this tier is **rate-limited per IP address**:
+
+- Each IP address gets a **fixed daily token (or request) budget**.
+- When you hit the limit, drafting pauses and the extension shows how long until your budget resets (resets every 24 hours).
+- The limit is per IP, not per user — people sharing the same network (office, home Wi-Fi) share the same budget.
+- No API key is stored in your browser on this path; the key lives only on the backend and is never sent to the extension.
+
+This keeps the free tier sustainable while still letting anyone try the extension with zero setup. If you need more than the free budget, switch to one of the self-funded options below.
+
+### Bring your own API key or SDK (no limits from me)
+
+To avoid the shared IP limit entirely, use your own account:
+
+- **Your own Anthropic or OpenAI API key** (Options 2 and 3 above): paste the key in **Settings**. Requests go straight from your browser to Anthropic/OpenAI on *your* account, so the only limits are your own provider's rate limits — nothing I impose.
+- **Your own Claude subscription via the SDK/Claude Code** (Option 1, the default): install Claude Code and register the native helper (see [One-time setup](#one-time-setup)). Requests run locally under your Claude plan, so again there is no per-IP limit from me.
+
+Pick whichever you prefer: **free hosted** for zero setup with a shared daily cap, or **your own key/SDK** for unlimited use that you pay for directly.
 
 ## Architecture
 
@@ -131,16 +154,19 @@ sequenceDiagram
 The profile outreach flow is similar, except the AI only returns a small JSON object of blanks (`profileBlanks`) and `templates.js` fills a fixed template locally — anything left empty stays in `[brackets]`.
 
 ## One-time setup
-1. **Claude Code**: install it (https://code.claude.com/docs/en/setup), open a terminal, run `claude` once and sign in with your Claude account.
-2. **Node.js**: install the LTS version from https://nodejs.org if `node -v` doesn't work.
-3. **Load the extension**: open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and pick the folder that directly contains `manifest.json`. If you loaded the older version, remove it first.
-4. **Register the helper (once)**:
-   - **Windows:** double-click [`nativehost\install.bat`](https://github.com/bhargavirengarajan21/linkedin-AI-reply/blob/master/nativehost/install.bat).
-   - **macOS / Linux:** `.bat` files don't run here — open a terminal in the `nativehost` folder and run `chmod +x install.sh host.sh && ./install.sh` instead (it registers the host under `~/Library/Application Support/.../NativeMessagingHosts` on macOS). Remove it later with `./uninstall.sh`.
 
-   Chrome then launches Claude on demand — no window to keep open, nothing running in the background. Prefer an API key? Skip this step.
-5. Click the extension's toolbar icon to open Settings, review the "About you" text, and click **Save & test**.
-6. Refresh your LinkedIn tab. A "LinkedIn AI Reply is on" message confirms the extension loaded.
+> **Decide your path first.** The default is the **Claude subscription** (via Claude Code — the SDK path), which needs steps 1, 2 and 4. If you'd rather use an **Anthropic or OpenAI API key**, you only need steps 3, 5 and 6 — **skip steps 1, 2 and 4**, and paste your key in Settings (step 5) instead.
+
+1. **Claude Code** *(subscription path only)*: install it (https://code.claude.com/docs/en/setup), open a terminal, run `claude` once, and sign in with your Claude account.
+2. **Node.js** *(subscription path only)*: install the LTS version from https://nodejs.org. Confirm it works by running `node -v` in a terminal.
+3. **Load the extension**: open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and pick the folder that directly contains `manifest.json`. If you loaded an older version, remove it first.
+4. **Register the helper** *(subscription path only, runs once)*:
+   - **Windows:** double-click [`nativehost\install.bat`](https://github.com/bhargavirengarajan21/linkedin-AI-reply/blob/master/nativehost/install.bat).
+   - **macOS / Linux:** `.bat` files don't run here — open a terminal in the `nativehost` folder and run `chmod +x install.sh host.sh && ./install.sh` (it registers the host under `~/Library/Application Support/.../NativeMessagingHosts` on macOS). Remove it later with `./uninstall.sh`.
+
+   Chrome then launches Claude on demand — no window to keep open, nothing running in the background.
+5. **Open Settings**: click the extension's toolbar icon. Review the "About you" text. If you're on an API-key path, pick the provider and paste your key here. Click **Save & test**.
+6. **Refresh** your LinkedIn tab. A "LinkedIn AI Reply is on" message confirms the extension loaded.
 
 ## Use
 - Click into a message box. **✨ AI Reply** appears just above it. Click it to draft a reply; click again for a new version.
@@ -168,8 +194,9 @@ To draft a reply, the extension sends your "About you" text, the open conversati
 - **Claude subscription (default):** the text goes to a helper on your own machine, which runs Claude Code; Claude Code sends it to **Anthropic** under your plan. Nothing goes to a server run by this extension.
 - **Anthropic API key:** the text is sent directly from your browser to **Anthropic** (`api.anthropic.com`).
 - **OpenAI API key:** the text is sent directly from your browser to **OpenAI** (`api.openai.com`).
+- **Free hosted:** the text is sent to the small backend I run (`server/`), which forwards it to Anthropic/OpenAI **under my key** and returns the draft. The key lives only on that backend and is never sent to your browser. Requests are rate-limited per IP address (see [Free version](#free-version-hosted-no-setup)); no key is stored in your browser on this path.
 
-Your API key is not part of what's sent to the model, but **keys are stored in plaintext in `chrome.storage.local`** (standard for extensions; anything with access to your browser profile can read them). The Claude subscription path stores no key.
+Your API key is not part of what's sent to the model, but on the two API-key paths **keys are stored in plaintext in `chrome.storage.local`** (standard for extensions; anything with access to your browser profile can read them). The Claude subscription and Free hosted paths store no key.
 
 ## Notes
 - The AI only states facts you put in Settings → "Background & preferences". Add your rate, W2/C2C preference, locations and availability so it can answer recruiter questions.

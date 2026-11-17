@@ -77,8 +77,17 @@
       <button type="button" class="liai-x" title="Close">✕</button>
     </div>
     <div class="liai-for"></div>
+    <label>Role
+      <select class="liai-role">
+        <option value="founder">Founder</option>
+        <option value="candidate">Candidate (job seeker)</option>
+        <option value="others">General reachout</option>
+        <option value="recruiter">Recruiter</option>
+        <option value="investor">Investor</option>
+      </select>
+    </label>
     <label>Message type
-      <select class="liai-type">${Object.entries(LIAI_TEMPLATES).map(([k, t]) => `<option value="${k}">${t.label}</option>`).join('')}</select>
+      <select class="liai-type"></select>
     </label>
     <label class="liai-f-referrer" hidden>Referred by
       <input class="liai-referrer" type="text" placeholder="Referrer's name">
@@ -109,12 +118,22 @@
   document.documentElement.appendChild(panel);
 
   const q = (s) => panel.querySelector(s);
+  const roleSel = q('.liai-role');
   const typeSel = q('.liai-type');
   const out = q('.liai-out');
   const bodyTa = q('.liai-body');
   const subjectIn = q('.liai-subject');
   const genBtn = q('.liai-generate');
   let current = { sendFrom: '' };
+
+  // Rebuild the Message-type list to only the templates for the chosen role.
+  function buildTypeOptions(role) {
+    const keep = typeSel.value;
+    const entries = Object.entries(LIAI_TEMPLATES).filter(([, t]) => t.role === role);
+    typeSel.innerHTML = entries.map(([k, t]) => `<option value="${k}">${t.label}</option>`).join('');
+    if (entries.some(([k]) => k === keep)) typeSel.value = keep; // preserve selection if still valid
+    syncFields();
+  }
 
   function syncFields() {
     const k = typeSel.value;
@@ -145,6 +164,7 @@
       const res = await chrome.runtime.sendMessage({
         type: 'profileBlanks',
         templateKey: key,
+        isDM: !t.email,
         profileName: profile.name,
         profileText: profile.text,
         jobTitle: '',
@@ -203,6 +223,7 @@
     }
   });
   q('.liai-x').addEventListener('click', () => { panel.hidden = true; });
+  roleSel.addEventListener('change', () => { buildTypeOptions(roleSel.value); out.hidden = true; });
   typeSel.addEventListener('change', () => { syncFields(); out.hidden = true; });
   genBtn.addEventListener('click', generate);
   bodyTa.addEventListener('input', updateCount);
@@ -218,7 +239,14 @@
     setBoxText(box, bodyTa.value);
   });
   panel.addEventListener('keydown', (e) => e.stopPropagation()); // keep LinkedIn shortcuts out of the panel
-  syncFields();
+
+  // Start on the candidate menu, then switch to the role saved in Settings (overridable here).
+  const ROLES = ['founder', 'candidate', 'others', 'recruiter', 'investor'];
+  buildTypeOptions('candidate');
+  chrome.storage.local.get({ userRole: 'candidate' }).then((s) => {
+    roleSel.value = ROLES.includes(s.userRole) ? s.userRole : 'candidate';
+    buildTypeOptions(roleSel.value);
+  }).catch(() => {});
 
   // LinkedIn is a single-page app: show the button only on profile pages, reset when the profile changes.
   let lastPath = '';

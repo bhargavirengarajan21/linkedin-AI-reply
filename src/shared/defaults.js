@@ -3,12 +3,14 @@
 // them in a git-ignored config.local.js (see config.local.example.js) which is merged
 // in below. config.local.js is loaded before this file.
 const DEFAULT_SETTINGS = Object.assign({
-  provider: 'claudecode', // 'claudecode' (your Claude subscription, via the native-messaging helper) | 'anthropic' | 'openai'
-  claudeCodeModel: 'sonnet', // alias passed to `claude --model` (sonnet, opus, haiku) or a full model name; blank = Claude Code default
+  provider: 'hosted', // 'hosted' (free, no key — default) | 'claudecode' (your Claude subscription, via the native-messaging helper) | 'anthropic' | 'openai'
+  claudeCodeModel: 'opus', // alias passed to `claude --model` (sonnet, opus, haiku) or a full model name; blank = Claude Code default
+  hostedUrl: '', // base URL of the free hosted backend (server/). Model + key live on the server; this is the only client setting.
   anthropicKey: '',
-  anthropicModel: 'claude-sonnet-5-5',
+  anthropicModel: 'claude-opus-4-8',
   openaiKey: '',
   openaiModel: 'gpt-4o-mini',
+  userRole: 'candidate', // 'candidate' (job seeker) | 'founder' — picks which outreach templates are offered
   myName: '',
   aboutMe: [
     'Add a few lines about yourself so replies can introduce you accurately.',

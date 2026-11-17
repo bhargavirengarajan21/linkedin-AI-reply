@@ -1,7 +1,7 @@
 // config.local.js (optional, git-ignored) is merged over defaults.js. If it's missing,
 // fall back to defaults only so the extension still loads.
-try { importScripts('config.local.js'); } catch (_) { /* no local config */ }
-importScripts('defaults.js');
+try { importScripts('../shared/config.local.js'); } catch (_) { /* no local config */ }
+importScripts('../shared/defaults.js');
 
 const INTENT_TEXT = {
   auto: '',
@@ -16,7 +16,7 @@ chrome.action.onClicked.addListener(() => chrome.runtime.openOptionsPage());
 // First install: open the welcome/home page so the user sees the setup guide.
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
-    chrome.tabs.create({ url: chrome.runtime.getURL('index.html') });
+    chrome.tabs.create({ url: chrome.runtime.getURL('src/pages/index.html') });
   }
 });
 
@@ -48,6 +48,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 function callModel(s, system, user) {
   if (s.provider === 'openai') return callOpenAI(s, system, user);
   if (s.provider === 'anthropic') return callAnthropic(s, system, user);
+  if (s.provider === 'hosted') return callHosted(s, system, user);
   return callClaudeCode(s, system, user);
 }
 
@@ -109,8 +110,12 @@ async function rememberExchange(req, reply) {
 async function profileBlanks(req) {
   const s = await chrome.storage.local.get(DEFAULT_SETTINGS);
   const name = s.myName || 'the user';
-  const isDM = req.templateKey === 'cold' || req.templateKey === 'askReferral'
-    || req.templateKey === 'reconnect' || req.templateKey === 'congrats';
+  // The content script knows each template's shape; a DM template needs why/how/ask filled.
+  // Fall back to the original key list if an older content script didn't send the flag.
+  const isDM = typeof req.isDM === 'boolean'
+    ? req.isDM
+    : (req.templateKey === 'cold' || req.templateKey === 'askReferral'
+      || req.templateKey === 'reconnect' || req.templateKey === 'congrats');
   const system = [
     `You fill in the blanks of outreach message templates for ${name}, who is looking at someone's LinkedIn profile.`,
     'Return ONLY a JSON object (no markdown, no commentary) with these string fields:',
@@ -235,6 +240,32 @@ async function callClaudeCode(s, system, user) {
 
 async function bridgeHealth() {
   return sendNative({ type: 'health' });
+}
+
+// ---------- Free hosted backend (owner's key, rate-limited per IP) ----------
+// The model and API key live on the server; the browser only sends system/user text.
+// The per-IP daily limit is enforced server-side, so it can't be bypassed from here.
+async function callHosted(s, system, user) {
+  const base = (s.hostedUrl || '').trim().replace(/\/+$/, '');
+  if (!base) throw new Error('No hosted backend URL set. Click here to open settings.');
+  let res;
+  try {
+    res = await fetch(`${base}/generate`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ system, user })
+    });
+  } catch (_) {
+    throw new Error('Could not reach the free hosted service. Check the URL in Settings or try again later.');
+  }
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 429) {
+    throw new Error(data.error || 'Daily free limit reached for your network. Add your own API key in Settings to remove this limit.');
+  }
+  if (!res.ok || !data.ok) {
+    throw new Error(data.error || `Hosted service error ${res.status}.`);
+  }
+  return data.text || '';
 }
 
 // ---------- API-key providers ----------

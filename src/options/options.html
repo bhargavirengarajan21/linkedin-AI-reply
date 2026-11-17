@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LinkedIn AI Reply – Settings</title>
+  <style>
+    :root {
+      --ink: #1d2226; --muted: #56687a; --faint: #8795a1;
+      --bg: #f4f2ee; --panel: #fff; --sidebar: #fbfaf8;
+      --brand: #0a66c2; --brand-soft: #e8f0fe; --brand-ink: #0a4e94;
+      --line: #e3e1dd; --line-strong: #c9cdd2;
+      --ok: #057642; --danger: #b42318;
+      --radius: 14px; --radius-sm: 10px;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; color: var(--ink); background: var(--bg);
+      font: 14px/1.55 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+    }
+    a { color: var(--brand); }
+
+    /* ---- shell ---- */
+    .app { min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 28px; background: var(--panel); border-bottom: 1px solid var(--line);
+    }
+    .topbar .brand { font-size: 16px; font-weight: 700; letter-spacing: -.1px; }
+    .topbar .brand .mark { color: var(--brand); }
+    .topbar .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .14em; color: var(--faint); }
+
+    .body { flex: 1; display: flex; align-items: stretch; }
+
+    /* ---- sidebar ---- */
+    .sidebar {
+      width: 248px; flex-shrink: 0; background: var(--sidebar);
+      border-right: 1px solid var(--line); padding: 24px 16px;
+      display: flex; flex-direction: column;
+    }
+    .sidebar .ws-label { font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--faint); padding: 0 10px 10px; }
+    .nav { display: flex; flex-direction: column; gap: 2px; }
+    .nav-item {
+      display: block; width: 100%; text-align: left; border: 0; background: none;
+      font: inherit; color: var(--muted); font-weight: 600; cursor: pointer;
+      padding: 10px 12px; border-radius: var(--radius-sm);
+    }
+    .nav-item:hover { background: #efede9; color: var(--ink); }
+    .nav-item.active { background: var(--brand-soft); color: var(--brand-ink); }
+    .sidebar .foot { margin-top: auto; padding: 12px 10px 0; color: var(--faint); font-size: 12px; line-height: 1.5; }
+
+    /* ---- content ---- */
+    .content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .scroll { flex: 1; overflow: auto; padding: 36px 40px 24px; }
+    .page { max-width: 760px; margin: 0 auto; }
+    .page[hidden] { display: none; }
+    .page-head h1 { font-size: 24px; margin: 0 0 6px; letter-spacing: -.3px; }
+    .page-head p { margin: 0 0 24px; color: var(--muted); font-size: 15px; }
+
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 20px; }
+    .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+    .card h2 { font-size: 16px; margin: 0; }
+    .card .card-sub { color: var(--muted); font-size: 13.5px; margin: 0 0 18px; }
+    .card .pill { font-size: 11px; font-weight: 700; color: var(--faint); background: #f1efeb; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+
+    .field { margin-bottom: 18px; }
+    .field:last-child { margin-bottom: 0; }
+    .field > label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+    .field > label .opt { font-weight: 400; color: var(--faint); }
+    .hint { color: var(--muted); font-size: 12.5px; margin: 6px 0 0; }
+    code { background: #f1efeb; padding: 1px 5px; border-radius: 4px; font-size: 92%; }
+
+    input[type=text], input[type=password], select, textarea {
+      display: block; width: 100%; padding: 10px 12px; color: var(--ink); background: #fff;
+      font: 14px -apple-system, system-ui, sans-serif; border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm); transition: border-color .12s, box-shadow .12s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(10,102,194,.12);
+    }
+    textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+    select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2356687a' d='M1 1l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+    /* ---- provider cards ---- */
+    .provider-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .provider-card {
+      position: relative; text-align: left; background: #fff; cursor: pointer;
+      border: 1.5px solid var(--line-strong); border-radius: var(--radius-sm); padding: 16px 18px;
+      transition: border-color .12s, box-shadow .12s, background .12s;
+    }
+    .provider-card:hover { border-color: var(--brand); }
+    .provider-card.selected { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 0 0 1px var(--brand) inset; }
+    .provider-card .pc-title { font-weight: 700; font-size: 14px; }
+    .provider-card .pc-desc { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
+    .provider-card .pc-flag { position: absolute; top: 14px; right: 16px; font-size: 11px; font-weight: 700; }
+    .provider-card.selected .pc-flag { color: var(--brand); }
+    .provider-card .pc-flag.dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--line-strong); }
+    .provider-card.selected .pc-flag.dot { border-color: var(--brand); background: var(--brand); box-shadow: inset 0 0 0 3px #fff; }
+
+    .provider-detail[hidden] { display: none; }
+    .provider-detail { margin-top: 18px; }
+
+    /* ---- callouts ---- */
+    .callout { border-radius: var(--radius-sm); padding: 14px 16px; font-size: 13px; }
+    .callout.info { background: var(--brand-soft); border: 1px solid #c7dcf6; }
+    .callout.info b { color: var(--brand-ink); }
+    .callout.subtle { background: #f7f6f3; border: 1px solid var(--line); color: var(--muted); }
+    .callout .c-title { font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+
+    .empty-state { text-align: center; border: 1px dashed var(--line-strong); border-radius: var(--radius-sm); padding: 22px; color: var(--muted); background: #faf9f7; }
+    .empty-state .es-title { font-weight: 600; color: var(--ink); }
+
+    /* ---- buttons ---- */
+    .btn { font: 600 13.5px -apple-system, system-ui, sans-serif; border-radius: 999px; padding: 9px 18px; cursor: pointer; border: 1px solid transparent; }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-primary:hover { background: #084f98; }
+    .btn-ghost { background: #fff; color: var(--brand); border-color: var(--brand); }
+    .btn-ghost:hover { background: var(--brand-soft); }
+    .btn-danger { background: #fff; color: var(--danger); border-color: #e4b4ae; }
+    .btn-danger:hover { background: #fdf0ee; }
+    .btn-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+    .filehint { color: var(--muted); font-size: 12.5px; }
+    input[type=file] { font-size: 13px; }
+
+    /* ---- save bar ---- */
+    .savebar {
+      border-top: 1px solid var(--line); background: var(--panel);
+      padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .savebar .left { color: var(--faint); font-size: 12.5px; display: flex; align-items: center; gap: 14px; }
+    .savebar .right { display: flex; align-items: center; gap: 12px; }
+    #status { color: var(--ok); font-weight: 600; font-size: 13px; }
+    .linkbtn { background: none; border: 0; color: var(--brand); font: 600 13px inherit; cursor: pointer; padding: 0; }
+    #testOut, #limitsOut, #freeTierAlert { white-space: pre-wrap; }
+    #testOut { display: none; background: #f7f6f3; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px 14px; margin-top: 14px; font-size: 13px; }
+
+    /* free-tier alert (content injected by options.js) */
+    #freeTierAlert { margin-top: 0; }
+    #freeTierAlert h3 { font-size: 14px; margin: 0 0 8px; }
+    #freeTierAlert .usage { margin: 8px 0; }
+    #freeTierAlert .bar { height: 8px; background: #e7e4df; border-radius: 4px; overflow: hidden; margin: 3px 0 8px; }
+    #freeTierAlert .bar > span { display: block; height: 100%; background: var(--brand); }
+    #freeTierAlert .math { margin: 10px 0 0; padding: 10px 12px; background: #f7f6f3; border-radius: var(--radius-sm); border: 1px solid var(--line); font-size: 12.5px; }
+    #limitsOut { display: none; background: var(--brand-soft); border: 1px solid #c7dcf6; border-radius: var(--radius-sm); padding: 10px 12px; margin-top: 12px; font-size: 13px; }
+
+    .stat-row { display: flex; gap: 40px; flex-wrap: wrap; }
+    .stat .num { font-size: 20px; font-weight: 700; }
+    .stat .lbl { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+    @media (max-width: 720px) {
+      .provider-grid { grid-template-columns: 1fr; }
+      .sidebar { width: 200px; }
+      .scroll { padding: 24px 20px; }
+      .savebar { padding: 14px 20px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">LinkedIn <span class="mark">AI Reply</span></div>
+    <div class="eyebrow">SETTINGS</div>
+  </header>
+
+  <div class="body">
+    <aside class="sidebar">
+      <div class="ws-label">YOUR WORKSPACE</div>
+      <nav class="nav">
+        <button class="nav-item active" data-tab="connection">Connection</button>
+        <button class="nav-item" data-tab="profile">Profile &amp; writing style</button>
+        <button class="nav-item" data-tab="advanced">Advanced</button>
+      </nav>
+      <div class="foot">Draft with AI.<br>Send with confidence.</div>
+    </aside>
+
+    <section class="content">
+      <div class="scroll">
+
+        <!-- ============ CONNECTION ============ -->
+        <div class="page" data-page="connection">
+          <div class="page-head">
+            <h1>Connection</h1>
+            <p>Choose how your replies are generated. You always review and send them yourself.</p>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>AI provider</h2></div>
+            <p class="card-sub">Pick where drafts come from. You can switch any time.</p>
+
+            <!-- hidden source of truth for options.js -->
+            <select id="provider" style="display:none">
+              <option value="hosted">Free hosted</option>
+              <option value="claudecode">Claude subscription</option>
+              <option value="anthropic">Anthropic API key</option>
+              <option value="openai">OpenAI API key</option>
+            </select>
+
+            <div class="provider-grid">
+              <div class="provider-card" data-provider="hosted" role="radio" tabindex="0">
+                <span class="pc-flag">Selected</span>
+                <div class="pc-title">Free hosted</div>
+                <div class="pc-desc">Shared daily allowance. No API key needed.</div>
+              </div>
+              <div class="provider-card" data-provider="claudecode" role="radio" tabindex="0">
+                <span class="pc-flag dot"></span>
+                <div class="pc-title">Claude subscription</div>
+                <div class="pc-desc">Use your subscription with a local helper.</div>
+              </div>
+              <div class="provider-card" data-provider="anthropic" role="radio" tabindex="0">
+                <span class="pc-flag dot"></span>
+                <div class="pc-title">Anthropic API key</div>
+                <div class="pc-desc">Connect with your own API key.</div>
+              </div>
+              <div class="provider-card" data-provider="openai" role="radio" tabindex="0">
+                <span class="pc-flag dot"></span>
+                <div class="pc-title">OpenAI API key</div>
+                <div class="pc-desc">Connect with your own API key.</div>
+              </div>
+            </div>
+
+            <!-- Claude subscription detail -->
+            <div class="provider-detail" data-provider="claudecode" hidden>
+              <div class="field" style="margin-top:4px">
+                <label>Model <span class="opt">(sonnet, opus, haiku, or blank for your Claude Code default)</span></label>
+                <input id="claudeCodeModel" type="text">
+              </div>
+              <p class="hint">Uses Claude Code on this computer, signed in with your Claude plan. Run <a href="https://github.com/bhargavirengarajan21/linkedin-AI-reply/blob/master/nativehost/install.bat" target="_blank"><code>nativehost\install.bat</code></a> once; Chrome launches Claude on demand. Conversation text is drafted on your machine and sent to Anthropic by Claude Code under your plan.</p>
+            </div>
+
+            <!-- Anthropic detail -->
+            <div class="provider-detail" data-provider="anthropic" hidden>
+              <div class="field" style="margin-top:4px">
+                <label>Anthropic API key <span class="opt">(platform.claude.com)</span></label>
+                <input id="anthropicKey" type="password" autocomplete="off" placeholder="sk-ant-...">
+              </div>
+              <div class="field">
+                <label>Model</label>
+                <input id="anthropicModel" type="text">
+              </div>
+              <p class="hint">Your “About you” text and the open conversation or profile text are sent from your browser directly to Anthropic (<code>api.anthropic.com</code>).</p>
+            </div>
+
+            <!-- OpenAI detail -->
+            <div class="provider-detail" data-provider="openai" hidden>
+              <div class="field" style="margin-top:4px">
+                <label>OpenAI API key</label>
+                <input id="openaiKey" type="password" autocomplete="off" placeholder="sk-...">
+              </div>
+              <div class="field">
+                <label>Model</label>
+                <input id="openaiModel" type="text">
+              </div>
+              <p class="hint">Your “About you” text and the open conversation or profile text are sent from your browser directly to OpenAI (<code>api.openai.com</code>).</p>
+            </div>
+          </div>
+
+          <!-- Hosted service (shown for the hosted provider) -->
+          <div class="provider-detail" data-provider="hosted">
+            <div class="card">
+              <div class="card-head">
+                <h2>Connect your hosted service</h2>
+                <span class="pill" id="hostedStatus">Not connected</span>
+              </div>
+              <p class="card-sub">Enter the service address provided by your extension administrator.</p>
+              <div class="field">
+                <label>Hosted service URL</label>
+                <input id="hostedUrl" type="text" placeholder="https://your-backend.example.com">
+              </div>
+              <div class="btn-row">
+                <button id="checkLimits" class="btn btn-ghost" type="button">Test connection</button>
+                <span class="filehint">Check availability and current usage.</span>
+              </div>
+              <div id="limitsOut"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <h2>Shared daily allowance</h2>
+                <span class="pill">Resets at midnight UTC</span>
+              </div>
+              <div id="freeTierAlert"></div>
+            </div>
+
+            <div class="callout subtle">
+              <div class="c-title">What is shared?</div>
+              Your “About you” details and the open conversation or profile text are sent to the hosted service to generate a draft.
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ PROFILE & WRITING STYLE ============ -->
+        <div class="page" data-page="profile" hidden>
+          <div class="page-head">
+            <h1>Profile &amp; writing style</h1>
+            <p>Give your replies the right context and make them sound like you.</p>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>About you</h2></div>
+            <p class="card-sub">The AI only states facts you provide here.</p>
+            <div class="field">
+              <label>Role</label>
+              <select id="userRole">
+                <option value="founder">Founder</option>
+                <option value="candidate">Candidate (job seeker)</option>
+                <option value="others">General reachout</option>
+                <option value="recruiter">Recruiter</option>
+                <option value="investor">Investor</option>
+              </select>
+              <p class="hint">Sets your default outreach templates. You can change this for each draft.</p>
+            </div>
+            <div class="field">
+              <label>Your name <span class="opt">· Optional</span></label>
+              <input id="myName" type="text" placeholder="Enter your name">
+              <p class="hint">Use the name that appears on your LinkedIn profile.</p>
+            </div>
+            <div class="field">
+              <label>Background &amp; preferences <span class="opt">· Optional</span></label>
+              <textarea id="aboutMe" placeholder="What should someone know about you?"></textarea>
+              <p class="hint">Include your experience, goals, location, or availability. Only facts you provide are used.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>Writing style</h2></div>
+            <p class="card-sub">Set the tone for your drafts. You can always edit a reply before sending.</p>
+            <div class="field">
+              <label>Reply instructions</label>
+              <textarea id="style" style="min-height:110px"></textarea>
+              <p class="hint">These instructions apply to new drafts.</p>
+            </div>
+          </div>
+
+          <div class="callout info">
+            <div class="c-title">You are always in control</div>
+            The extension drafts replies. You review them and press Send yourself.
+          </div>
+        </div>
+
+        <!-- ============ ADVANCED ============ -->
+        <div class="page" data-page="advanced" hidden>
+          <div class="page-head">
+            <h1>Advanced</h1>
+            <p>Fine-tune outreach defaults and manage what this browser remembers.</p>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>Outreach defaults</h2></div>
+            <p class="card-sub">Optional details for messages started from LinkedIn profiles.</p>
+            <div class="field">
+              <label>Introduction</label>
+              <input id="whoYouAre" type="text" placeholder="I’m…">
+              <p class="hint">Used in “Reach out” and “Ask for a referral” messages.</p>
+            </div>
+            <div class="field">
+              <label>Default target role</label>
+              <input id="targetRole" type="text" placeholder="e.g. Product designer">
+              <p class="hint">Used when no role or open position is specified.</p>
+            </div>
+            <div class="field">
+              <label>Send-from email</label>
+              <input id="emailPersonal" type="text" placeholder="you@example.com">
+              <p class="hint">Used in outreach emails.</p>
+            </div>
+            <div class="field">
+              <label>Skills &amp; expertise</label>
+              <textarea id="skillStack" placeholder="Add your skills, tools, and areas of expertise." style="min-height:120px"></textarea>
+              <p class="hint">Only skills listed here are included in outreach drafts.</p>
+            </div>
+            <div class="field">
+              <div class="btn-row">
+                <label class="btn btn-ghost" for="skillFile" style="margin:0">Upload skills</label>
+                <input id="skillFile" type="file" accept=".txt,.md,.json,text/plain,application/json" style="display:none">
+                <span class="filehint" id="skillFileMsg">.txt, .md, or .json · Review imported skills before saving.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>Conversation memory</h2></div>
+            <p class="card-sub">Short recaps help replies stay consistent with each person. They are stored only in this browser.</p>
+            <div class="empty-state" style="margin-bottom:16px">
+              <div class="es-title">Remembered conversations</div>
+              <div id="memCount">Recaps will appear as you use the extension.</div>
+            </div>
+            <button id="clearMem" class="btn btn-danger" type="button">Clear remembered conversations</button>
+          </div>
+
+          <div class="callout subtle">
+            <div class="c-title">Stored locally, not encrypted</div>
+            Settings, memory, and any API keys are stored in this browser’s extension storage. Anyone with access to this browser profile may be able to read them.
+          </div>
+        </div>
+
+      </div>
+
+      <footer class="savebar">
+        <div class="left">
+          <span>Settings stay in this browser</span>
+          <button id="test" class="linkbtn" type="button">Save &amp; send a test draft</button>
+        </div>
+        <div class="right">
+          <span id="status"></span>
+          <button id="save" class="btn btn-primary">Save settings</button>
+        </div>
+      </footer>
+      <div id="testOut" style="margin:0 40px 24px"></div>
+    </section>
+  </div>
+</div>
+
+<script src="../shared/defaults.js"></script>
+<script src="options.js"></script>
+</body>
+</html>

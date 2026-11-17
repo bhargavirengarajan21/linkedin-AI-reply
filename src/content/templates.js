@@ -1,7 +1,9 @@
 // Outreach message templates. Only the [bracketed] blanks are ever replaced.
+// `role` ('candidate' | 'founder' | 'investor' | 'others') decides which role's menu a template appears in.
 const LIAI_TEMPLATES = {
   cold: {
     label: 'Reach out (LinkedIn DM)',
+    role: 'candidate',
     email: false,
     body: [
       'Hi [Name],',
@@ -78,6 +80,7 @@ const LIAI_TEMPLATES = {
   },
   recruiter: {
     label: 'Recruiter networking',
+    role: 'recruiter',
     email: true,
     subject: 'Exploring [Job Role] Opportunities',
     body: [
@@ -110,8 +113,109 @@ const LIAI_TEMPLATES = {
       'I enjoyed learning more about the team and remain very interested in the opportunity.',
       'Looking forward to hearing about the next steps.'
     ]
+  },
+
+  // ---------- Founder ----------
+  founderReachout: {
+    label: 'Reach out (LinkedIn DM)',
+    role: 'founder',
+    email: false,
+    body: [
+      'Hi [Name],',
+      'I’m [who you are].',
+      '[Why you’re reaching out — specific to them].',
+      '[How you can help — tied to their problem or the job].',
+      'Would you be open to [specific, low-effort ask]?'
+    ]
+  },
+  investor: {
+    label: 'Investor outreach (LinkedIn DM)',
+    role: 'founder',
+    email: false,
+    body: [
+      'Hi [Name],',
+      'I’m [who you are].',
+      '[Why you’re reaching out — specific to them].',
+      '[How you can help — tied to their problem or the job].',
+      'Would you be open to [specific, low-effort ask]?'
+    ]
+  },
+  partnership: {
+    label: 'Partnership / BD (LinkedIn DM)',
+    role: 'founder',
+    email: false,
+    body: [
+      'Hi [Name],',
+      'I’m [who you are].',
+      '[Why you’re reaching out — specific to them].',
+      '[How you can help — tied to their problem or the job].',
+      'Would you be open to [specific, low-effort ask]?'
+    ]
+  },
+  generalInquiry: {
+    label: 'General inquiry (LinkedIn DM)',
+    role: 'founder',
+    email: false,
+    body: [
+      'Hi [Name],',
+      'I’m [who you are].',
+      '[Why you’re reaching out — specific to them].',
+      'Would you be open to [specific, low-effort ask]?'
+    ]
+  },
+
+  // ---------- Investor ----------
+  investorReachout: {
+    label: 'Reach out to founder (LinkedIn DM)',
+    role: 'investor',
+    email: false,
+    body: [
+      'Hi [Name],',
+      'I’m [who you are].',
+      '[Why you’re reaching out — specific to them and what you invest in].',
+      '[How you can help beyond capital].',
+      'Would you be open to [specific, low-effort ask]?'
+    ]
+  },
+  investorIntro: {
+    label: 'Request deck / intro (LinkedIn DM)',
+    role: 'investor',
+    email: false,
+    body: [
+      'Hi [Name],',
+      'I’m [who you are].',
+      '[Why their company caught your attention — be specific].',
+      'Would you be open to sharing a deck or a quick intro call?'
+    ]
+  },
+
+  // ---------- Other ----------
+  otherReachout: {
+    label: 'Reach out (LinkedIn DM)',
+    role: 'others',
+    email: false,
+    body: [
+      'Hi [Name],',
+      'I’m [who you are].',
+      '[Why you’re reaching out — specific to them].',
+      'Would you be open to [specific, low-effort ask]?'
+    ]
+  },
+  otherInquiry: {
+    label: 'General inquiry (LinkedIn DM)',
+    role: 'others',
+    email: false,
+    body: [
+      'Hi [Name],',
+      'I’m [who you are].',
+      '[Why you’re reaching out — specific to them].',
+      'Would you be open to [specific, low-effort ask]?'
+    ]
   }
 };
+
+// Any template without an explicit role is a candidate (job-seeker) template.
+for (const t of Object.values(LIAI_TEMPLATES)) if (!t.role) t.role = 'candidate';
 
 // v: { yourName, recipient, company, jobTitle, skills, referrer, date, whoYouAre, why, how, ask }
 function liaiFillTemplate(key, v) {

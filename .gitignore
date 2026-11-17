@@ -1,5 +1,10 @@
 # Private, per-user config — never commit this. Copy config.local.example.js instead.
+src/shared/config.local.js
 config.local.js
+
+# Backend secrets and deps
+backend/.env
+backend/node_modules/
 
 # Private signing key for the extension's fixed ID — never commit or share this.
 nativehost-private-key.pem

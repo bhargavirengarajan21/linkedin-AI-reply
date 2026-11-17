@@ -1,0 +1,18 @@
+{
+  "name": "linkedin-ai-reply-backend",
+  "version": "1.0.0",
+  "description": "Hosted proxy for the LinkedIn AI Reply extension. Holds the owner's API key server-side and enforces a per-IP daily budget so the free tier can't be abused.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
