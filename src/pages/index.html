@@ -60,15 +60,15 @@
 <body>
   <header class="hero">
     <div class="wrap">
-      <span class="badge">Chrome extension · Manifest V3 · v1.2.4</span>
+      <span class="badge">Chrome extension · Manifest V3 · v1.2.5</span>
       <h1>Draft LinkedIn replies &amp; outreach with AI.<br><span>You review and hit Send.</span></h1>
-      <p class="sub">A floating button on LinkedIn messages and profiles drafts a reply or a tailored outreach message in seconds — using your Claude subscription or your own API key. It never sends anything on its own.</p>
+      <p class="sub">A floating button on LinkedIn messages and profiles drafts a reply or a tailored outreach message in seconds — free out of the box, or on your own Claude subscription or API key. It never sends anything on its own.</p>
       <div class="cta">
         <!-- Replace # with your Chrome Web Store URL once published -->
         <a class="btn btn-primary" href="#get-started">Get started</a>
         <a class="btn btn-ghost" href="../../README.md">Read the docs</a>
       </div>
-      <p class="note">No tracking. Your API key stays in your browser. To draft text, the conversation or profile text is sent to an AI provider — Anthropic (including on the default Claude subscription path, via Claude Code) or OpenAI — see <a href="#privacy">Privacy</a>.</p>
+      <p class="note">No tracking. To draft text, the conversation or profile text is sent to your chosen AI path — by default a small hosted backend run by this project (on its own key, rate-limited per IP), or your own Claude subscription / Anthropic / OpenAI account. Any API key you add stays in your browser. See <a href="#privacy">Privacy</a>.</p>
     </div>
   </header>
 
@@ -93,7 +93,7 @@
       <div class="card"><h3>📝 Polish your draft</h3><p>Type a rough draft first, then click AI Reply. Instead of starting over, it refines what you wrote and keeps the facts you put in.</p></div>
       <div class="card"><h3>📇 Outreach from profiles</h3><p>On any profile, a <strong>Draft message</strong> button fills one of your templates — reach-out, referral ask, application, follow-up and more — word for word for that person.</p></div>
       <div class="card"><h3>🧠 Remembers context</h3><p>It keeps a short recap of your recent exchanges with each person, locally, so replies stay consistent over time. Clear it any time in Settings.</p></div>
-      <div class="card"><h3>🔌 Your choice of model</h3><p>Use your Claude subscription via a helper Chrome launches on demand (no API key), or paste an Anthropic or OpenAI API key. Switch any time in Settings.</p></div>
+      <div class="card"><h3>🔌 Your choice of model</h3><p>Start free on the hosted backend (no key, no setup — rate-limited per IP). Or switch to your Claude subscription via a helper Chrome launches on demand, or paste an Anthropic or OpenAI API key. Change any time in Settings.</p></div>
       <div class="card"><h3>🔒 Nothing sends itself</h3><p>The extension only writes text into the box. You always read it, edit it, and press Send. Your API key never leaves your browser; the conversation or profile being drafted is sent to your chosen AI provider — <a href="#privacy">details below</a>.</p></div>
     </div>
   </section>
@@ -139,6 +139,7 @@
         <tr><td class="name">After interview <span class="tag tag-email">Email</span></td><td>A thank-you / follow-up email after an interview.</td></tr>
       </tbody>
     </table>
+    <p class="note">These are the job-search templates. The extension ships <strong>18 templates in all</strong> — Settings also offers tailored sets for founders, investors, and general networking, picked by the role you choose.</p>
   </section>
 
   <section class="wrap">
@@ -148,20 +149,20 @@
 
   <section class="wrap" id="get-started">
     <h2>Get started</h2>
-    <p class="lead">A one-time setup, then it just works on LinkedIn.</p>
+    <p class="lead">The free hosted option works the moment you load the extension — steps 1 and 2 (Claude Code + Node.js) are only for the optional Claude-subscription path.</p>
     <ol class="steps">
-      <li><strong>Install Claude Code (recommended path).</strong>
-        <p>Install it from <a href="https://code.claude.com/docs/en/setup" target="_blank">code.claude.com</a>, open a terminal, run <code>claude</code> once and sign in with your Claude account. Prefer an API key instead? Skip to step 4.</p></li>
-      <li><strong>Install Node.js.</strong>
+      <li><strong>Install Claude Code <em>(subscription path only — skip for free hosted)</em>.</strong>
+        <p>Install it from <a href="https://code.claude.com/docs/en/setup" target="_blank">code.claude.com</a>, open a terminal, run <code>claude</code> once and sign in with your Claude account. Using free hosted or an API key? Skip to step 3.</p></li>
+      <li><strong>Install Node.js <em>(subscription path only)</em>.</strong>
         <p>Grab the LTS build from <a href="https://nodejs.org" target="_blank">nodejs.org</a> if <code>node -v</code> doesn't already print a version. The local helper needs it.</p></li>
       <li><strong>Download the extension.</strong>
         <p>Get it from <a href="https://github.com/bhargavirengarajan21/linkedin-AI-reply" target="_blank">github.com/bhargavirengarajan21/linkedin-AI-reply</a> &mdash; click <strong>Code &rarr; Download ZIP</strong>, then unzip it to a folder you'll keep.</p></li>
       <li><strong>Load the extension.</strong>
-        <p>Open <code>chrome://extensions</code>, turn on <strong>Developer mode</strong>, click <strong>Load unpacked</strong>, and pick the unzipped folder that directly contains <code>manifest.json</code>. On first install, this page opens automatically.</p></li>
-      <li><strong>Register the helper (once).</strong>
-        <p>Double-click <code>nativehost\install.bat</code> once. That's it — Chrome then <strong>launches Claude on demand</strong>, with no window to keep open and nothing running in the background. Prefer an API key? Skip this step entirely.</p></li>
+        <p>Open <code>chrome://extensions</code>, turn on <strong>Developer mode</strong>, click <strong>Load unpacked</strong>, and pick the unzipped folder that directly contains <code>manifest.json</code>. On first install, this page opens automatically. <strong>On the free hosted default, you can start drafting right now — jump to step 7.</strong></p></li>
+      <li><strong>Register the helper <em>(subscription path only, once)</em>.</strong>
+        <p>Double-click <code>nativehost\install.bat</code> once. That's it — Chrome then <strong>launches Claude on demand</strong>, with no window to keep open and nothing running in the background. On free hosted or an API key? Skip this step entirely.</p></li>
       <li><strong>Tell it about you.</strong>
-        <p>Click the toolbar icon to open Settings. Choose your provider (Claude subscription, or paste an Anthropic/OpenAI key), fill in your name, background, writing style, stack and send-from email, then click <strong>Save &amp; test</strong>. The AI only states facts you provide here.</p></li>
+        <p>Click the toolbar icon to open Settings. Pick your provider (<strong>free hosted</strong> is selected by default; or Claude subscription, or paste an Anthropic/OpenAI key), fill in your name, background, writing style, stack and send-from email, then click <strong>Save &amp; test</strong>. The AI only states facts you provide here.</p></li>
       <li><strong>Draft away.</strong>
         <p>Refresh LinkedIn — a "LinkedIn AI Reply is on" message confirms it loaded. Click into a message or open a profile and press the ✨ button. Review, edit, and Send.</p></li>
     </ol>
@@ -173,7 +174,8 @@
       <p>Your settings, API keys, profile details and remembered conversations are stored only in your browser (<code>chrome.storage.local</code>). The extension never sends messages for you — it only drafts text and inserts it into the box.</p>
       <p><strong>To draft a reply, some data has to reach an AI model.</strong> What is sent, and to whom, depends on the provider you pick in Settings:</p>
       <ul>
-        <li><strong>Claude subscription (default):</strong> your “About you” text and the open conversation or profile text are passed to a helper on your own machine, which runs Claude Code. Claude Code then sends that text to <strong>Anthropic</strong> under your Claude plan. Nothing goes to a server run by this extension.</li>
+        <li><strong>Free hosted (default):</strong> your “About you” text and the open conversation or profile text are sent to a small backend run by this project, which forwards them to <strong>Anthropic</strong> on the project's own API key and returns the draft. So on this default path, your message text <em>does</em> pass through that server (it isn't stored there, and the key never reaches your browser). Switch to any option below to avoid the project's server entirely.</li>
+        <li><strong>Claude subscription:</strong> the text is passed to a helper on your own machine, which runs Claude Code. Claude Code then sends it to <strong>Anthropic</strong> under your Claude plan. Nothing goes to a server run by this project.</li>
         <li><strong>Anthropic API key:</strong> the same text is sent directly from your browser to <strong>Anthropic</strong> (<code>api.anthropic.com</code>).</li>
         <li><strong>OpenAI API key:</strong> the same text is sent directly from your browser to <strong>OpenAI</strong> (<code>api.openai.com</code>).</li>
       </ul>
@@ -184,7 +186,7 @@
 
   <section class="wrap" id="faq">
     <h2>FAQ</h2>
-    <details><summary>Do I need an API key?</summary><p>No. By default it uses your Claude subscription through Claude Code running on your computer, so there's no key and no extra cost beyond your plan. An Anthropic or OpenAI API key is an optional alternative.</p></details>
+    <details><summary>Do I need an API key?</summary><p>No. By default it uses the free hosted option — a small backend run by this project, on its own key, rate-limited per IP — so it works with no key and no setup. Prefer not to use that server, or need more than the free budget? Switch to your own Claude subscription (via Claude Code, no key) or an Anthropic/OpenAI API key in Settings.</p></details>
     <details><summary>Does it send messages automatically?</summary><p>Never. It only writes a draft into the box. You read it, edit it, and press Send yourself — every time.</p></details>
     <details><summary>How long does a draft take?</summary><p>Roughly 5–20 seconds with Claude Code, depending on your machine and the length of the thread.</p></details>
     <details><summary>Will it make up facts about me?</summary><p>No. It only states facts written in Settings → "Background &amp; preferences", and picks skills only from your saved stack. Missing details are left as <code>[brackets]</code> or turned into a question.</p></details>

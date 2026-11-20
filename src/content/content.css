@@ -30,6 +30,9 @@
   width: 280px;
   box-sizing: border-box;
   padding: 12px;
+  /* Never taller than the viewport; position() sets a tighter max-height per anchor side. */
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
   background: #fff;
   color: #1d2226;
   border: 1px solid #d0d5da;

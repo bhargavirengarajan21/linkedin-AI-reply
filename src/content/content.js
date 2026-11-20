@@ -2,7 +2,7 @@
   'use strict';
   if (window.__liaiLoaded) return;
   window.__liaiLoaded = true;
-  console.log('[LinkedIn AI Reply] content script loaded (v1.2.4 — voice + memory + reply panel)');
+  console.log('[LinkedIn AI Reply] content script loaded (v1.2.5 — voice + memory + reply panel)');
 
   // Known LinkedIn message classes. Used when present; there is a generic fallback when they change.
   const SEL = {
@@ -214,8 +214,14 @@
   function sensitiveFlags(text) {
     const t = ` ${text || ''} `;
     const flags = [];
-    if (/\$\s?\d|\d+\s?(?:\/|per\s)?\s?(?:hr|hour|yr|year|k\b)|\b\d{2,3}\s?(?:k|K)\b|\b(?:rate|salary|w2|c2c|compensation|per hour|per year)\b/i.test(t)) flags.push('money/rate');
-    if (/\b(?:\+?\d[\d\-\s().]{7,}\d)\b/.test(t)) flags.push('phone number');
+    // Money/rate: a currency amount, an explicit rate ("100/hr", "90 per year"), a "$120k"
+    // figure, or an explicit pay word. Deliberately NOT bare "5 years" or "10k users" —
+    // those have no currency/rate context, so they no longer trip the warning.
+    if (/\$\s?\d|\b\d[\d,]*\s*(?:\/|per\s)\s*(?:hr|hour|yr|year)\b|\$\s?\d[\d,.]*\s*k\b|\b(?:rate|salary|w2|c2c|compensation|per hour|per year)\b/i.test(t)) flags.push('money/rate');
+    // Phone: an international +number, a (123) 456-7890 / 123-456-7890 / 123.456.7890 pattern,
+    // or 10–11 contiguous digits. Space-grouped IDs like a meeting ID "845 2231 9087" are not
+    // phone-shaped, so they no longer flag.
+    if (/\+\d[\d\-\s().]{7,}\d|\(\d{3}\)\s?\d{3}[-.\s]?\d{4}|\b\d{3}[-.]\d{3}[-.]\d{4}\b|\b\d{10,11}\b/.test(t)) flags.push('phone number');
     if (/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i.test(t)) flags.push('email address');
     return flags;
   }
@@ -233,6 +239,9 @@
   let cur = null;
   let busy = false;
   const lastGenerated = new WeakMap();
+  // Context of the draft currently shown in the panel, so we can save it to per-contact
+  // memory only if the user actually inserts it (not for discarded regenerates).
+  let lastContext = null;
 
   function position() {
     if (!cur || !cur.isConnected) { hide(true); return; }
@@ -248,9 +257,20 @@
     wrap.style.left = `${left}px`;
     if (!pop.hidden) {
       pop.style.left = `${Math.max(8, Math.min(left + w - 280, window.innerWidth - 288))}px`;
-      pop.style.top = '';
-      pop.style.bottom = `${window.innerHeight - top + 6}px`;
-      if (top < 260) { pop.style.bottom = ''; pop.style.top = `${top + h + 6}px`; }
+      // Anchor the panel on whichever side of the button has more room, and cap its height to
+      // the space available there so it never runs off the top (which would hide the Goal
+      // dropdown) or the bottom. Overflow scrolls — see .liai-pop in content.css.
+      const spaceAbove = top - 8;
+      const spaceBelow = window.innerHeight - (top + h) - 8;
+      if (spaceBelow >= spaceAbove) {
+        pop.style.top = `${top + h + 6}px`;
+        pop.style.bottom = '';
+        pop.style.maxHeight = `${Math.max(140, spaceBelow - 6)}px`;
+      } else {
+        pop.style.bottom = `${window.innerHeight - top + 6}px`;
+        pop.style.top = '';
+        pop.style.maxHeight = `${Math.max(140, spaceAbove - 6)}px`;
+      }
     }
   }
 
@@ -299,9 +319,10 @@
         draft
       });
       if (!res || !res.ok) throw new Error(res ? res.error : 'No response from the extension.');
-      setEditorText(editor, res.text);
-      lastGenerated.set(editor, squash(editor.value || editor.innerText));
-      // Show the generated reply in the panel so you can review, edit, copy or re-insert it.
+      // Show the draft in the review panel FIRST. It only goes into the message box when the
+      // user clicks "Insert into box" — so a draft flagged for a rate or phone number is seen
+      // before anything lands in the thread. Remember the context for save-on-insert.
+      lastContext = { editor, otherName: convo.otherName, transcript: convo.transcript };
       replyText.value = res.text;
       showFlags(res.text);
       replyOut.hidden = false;
@@ -373,9 +394,26 @@
   pop.querySelector('.liai-insert-reply').addEventListener('click', (e) => {
     e.preventDefault();
     if (!cur) return toast('Click into a LinkedIn message box first.');
-    setEditorText(cur, replyText.value);
+    const text = replyText.value;
+    setEditorText(cur, text);
     lastGenerated.set(cur, squash(cur.value || cur.innerText));
+    // The draft is only now committed to the thread, so this is when it's worth remembering.
+    rememberInserted(text);
   });
+
+  // Save the inserted draft to per-contact memory (background keeps a small, capped recap).
+  // Only called from the Insert action, so regenerated-but-discarded drafts never pile up.
+  function rememberInserted(text) {
+    if (!lastContext || !text || !text.trim()) return;
+    try {
+      chrome.runtime.sendMessage({
+        type: 'remember',
+        otherName: lastContext.otherName,
+        transcript: lastContext.transcript,
+        text
+      });
+    } catch (_) { /* extension reloaded; nothing to remember */ }
+  }
   pop.querySelector('.liai-copy-reply').addEventListener('click', (e) => { e.preventDefault(); copyText(replyText.value, e.target); });
   replyText.addEventListener('keydown', (e) => e.stopPropagation());
   replyText.addEventListener('input', () => showFlags(replyText.value));

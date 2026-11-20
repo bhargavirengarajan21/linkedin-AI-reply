@@ -2,7 +2,7 @@
 
 Shows a floating **✨ AI Reply** button above any LinkedIn message box you click into, on the Messaging page or in the small chat pop-ups. It reads the open conversation and drafts a reply into the box. It never sends; you review, edit and press Send.
 
-By default it uses **your Claude subscription** through Claude Code running on your computer, so no API key is needed.
+By default it uses the **free hosted** option — requests go to a small backend I run, on my API key, rate-limited per IP address — so it works out of the box with no setup or key. You can switch to your own Claude subscription, Anthropic key, or OpenAI key any time in Settings.
 
 ## Demo
 
@@ -10,14 +10,14 @@ By default it uses **your Claude subscription** through Claude Code running on y
 
 ## Pick how it talks to the AI
 
-Choose one of three providers in Settings:
+Choose one of four providers in Settings:
 
 | Option | What you need | Setup effort | Cost to you |
 | --- | --- | --- | --- |
-| **1. Your Claude subscription** (default) | Windows, Node.js, and Claude Code installed and signed in, then run [`nativehost\install.bat`](https://github.com/bhargavirengarajan21/linkedin-AI-reply/blob/master/nativehost/install.bat) once | High, developer-level | Covered by your Claude plan |
-| **2. Anthropic API key** | Paste the key in the extension's Settings | Low | Pay per use on your own account |
-| **3. OpenAI API key** | Paste the key in the extension's Settings | Low | Pay per use on your own account |
-| **4. Free hosted (my API key)** | Nothing — works out of the box, subject to a daily limit | None | Free, rate-limited per IP address |
+| **1. Free hosted (my API key)** (default) | Nothing — works out of the box, subject to a daily limit | None | Free, rate-limited per IP address |
+| **2. Your Claude subscription** | Windows, Node.js, and Claude Code installed and signed in, then run [`nativehost\install.bat`](https://github.com/bhargavirengarajan21/linkedin-AI-reply/blob/master/nativehost/install.bat) once | High, developer-level | Covered by your Claude plan |
+| **3. Anthropic API key** | Paste the key in the extension's Settings | Low | Pay per use on your own account |
+| **4. OpenAI API key** | Paste the key in the extension's Settings | Low | Pay per use on your own account |
 
 ## Free version (hosted, no setup)
 
@@ -36,10 +36,10 @@ This keeps the free tier sustainable while still letting anyone try the extensio
 
 To avoid the shared IP limit entirely, use your own account:
 
-- **Your own Anthropic or OpenAI API key** (Options 2 and 3 above): paste the key in **Settings**. Requests go straight from your browser to Anthropic/OpenAI on *your* account, so the only limits are your own provider's rate limits — nothing I impose.
-- **Your own Claude subscription via the SDK/Claude Code** (Option 1, the default): install Claude Code and register the native helper (see [One-time setup](#one-time-setup)). Requests run locally under your Claude plan, so again there is no per-IP limit from me.
+- **Your own Anthropic or OpenAI API key** (Options 3 and 4 above): paste the key in **Settings**. Requests go straight from your browser to Anthropic/OpenAI on *your* account, so the only limits are your own provider's rate limits — nothing I impose.
+- **Your own Claude subscription via the SDK/Claude Code** (Option 2): install Claude Code and register the native helper (see [One-time setup](#one-time-setup)). Requests run locally under your Claude plan, so again there is no per-IP limit from me.
 
-Pick whichever you prefer: **free hosted** for zero setup with a shared daily cap, or **your own key/SDK** for unlimited use that you pay for directly.
+Pick whichever you prefer: **free hosted** (the default) for zero setup with a shared daily cap, or **your own key/SDK** for unlimited use that you pay for directly.
 
 ## Architecture
 
@@ -50,7 +50,7 @@ flowchart TD
     subgraph page["LinkedIn page (content scripts)"]
         C["content.js<br/>✨ AI Reply button"]
         P["profile.js<br/>✨ Draft message panel"]
-        T["templates.js<br/>10 outreach templates<br/>(networking + job search)"]
+        T["templates.js<br/>18 outreach templates<br/>(networking + job search, by role)"]
         D1["defaults.js · content.css"]
     end
 
@@ -155,7 +155,7 @@ The profile outreach flow is similar, except the AI only returns a small JSON ob
 
 ## One-time setup
 
-> **Decide your path first.** The default is the **Claude subscription** (via Claude Code — the SDK path), which needs steps 1, 2 and 4. If you'd rather use an **Anthropic or OpenAI API key**, you only need steps 3, 5 and 6 — **skip steps 1, 2 and 4**, and paste your key in Settings (step 5) instead.
+> **Decide your path first.** The default is **free hosted** — it needs no key and no local setup, so just do steps 3 and 6 (load the extension, refresh LinkedIn) and you're done. If you'd rather use an **Anthropic or OpenAI API key**, do steps 3, 5 and 6 and paste your key in Settings (step 5). Only the **Claude subscription** path needs steps 1, 2 and 4 (Claude Code + Node.js + the native helper).
 
 1. **Claude Code** *(subscription path only)*: install it (https://code.claude.com/docs/en/setup), open a terminal, run `claude` once, and sign in with your Claude account.
 2. **Node.js** *(subscription path only)*: install the LTS version from https://nodejs.org. Confirm it works by running `node -v` in a terminal.

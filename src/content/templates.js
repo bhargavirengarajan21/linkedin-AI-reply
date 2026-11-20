@@ -74,7 +74,7 @@ const LIAI_TEMPLATES = {
       'Hi [Name],',
       'I’m currently looking for [Job Title] opportunities and would love to explore roles at [Company].',
       'My experience includes [relevant skills].',
-      'I’ve attached my resume in case there are any suitable'
+      'I’ve attached my resume in case there are any suitable openings.'
     ],
     defaultRole: true
   },
@@ -87,7 +87,7 @@ const LIAI_TEMPLATES = {
       'Hi [Name],',
       'I came across your profile while looking for [Job Role] opportunities.',
       'I have experience in [relevant skills] and am currently exploring new roles.',
-      'Would love to connect and hear about any'
+      'Would love to connect and hear about any relevant opportunities you come across.'
     ],
     defaultRole: true
   },
@@ -221,8 +221,9 @@ for (const t of Object.values(LIAI_TEMPLATES)) if (!t.role) t.role = 'candidate'
 function liaiFillTemplate(key, v) {
   const t = LIAI_TEMPLATES[key];
   const body = t.body.slice();
-  if (t.senderLast) body[body.length - 1] = v.yourName;
-  else if (t.email) body.push(v.yourName);
+  // Sign-off: use the name, or keep a [Your Name] placeholder (never a blank line) when it's unset.
+  if (t.senderLast) body[body.length - 1] = v.yourName || '[Your Name]';
+  else if (t.email && v.yourName) body.push(v.yourName);
 
   const map = {
     '[Your Name]': v.yourName,

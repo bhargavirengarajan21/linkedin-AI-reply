@@ -1,10 +1,14 @@
-# Private, per-user config — never commit this. Copy config.local.example.js instead.
-src/shared/config.local.js
-config.local.js
+# src/shared/config.local.js is committed as an EMPTY stub so the extension loads from a
+# fresh clone (manifest.json's content_scripts reference it). Keep your private copy with
+# real details untracked locally via:
+#   git update-index --skip-worktree src/shared/config.local.js
+# Any OTHER config.local.js (e.g. at the repo root) is private — never commit it.
+/config.local.js
 
-# Backend secrets and deps
-backend/.env
-backend/node_modules/
+# Backend secrets, deps and crash logs (the hosted backend lives in server/, not backend/)
+server/.env
+server/node_modules/
+server/*.err
 
 # Private signing key for the extension's fixed ID — never commit or share this.
 nativehost-private-key.pem

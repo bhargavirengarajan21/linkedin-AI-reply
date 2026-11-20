@@ -27,6 +27,14 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       .catch((err) => sendResponse({ ok: false, error: err.message || String(err) }));
     return true; // async response
   }
+  if (msg && msg.type === 'remember') {
+    // Content script calls this only when the user inserts a draft — so memory holds messages
+    // that were actually put into the thread, not every regenerated-and-discarded draft.
+    rememberExchange(msg, msg.text)
+      .then(() => sendResponse({ ok: true }))
+      .catch((err) => sendResponse({ ok: false, error: err.message || String(err) }));
+    return true;
+  }
   if (msg && msg.type === 'profileBlanks') {
     profileBlanks(msg)
       .then((blanks) => sendResponse({ ok: true, blanks }))
@@ -66,7 +74,8 @@ async function generate(req) {
   const memory = await recallMemory(req.otherName);
   const { system, user } = buildPrompts(s, req, memory);
   const text = clean(await callModel(s, system, user));
-  await rememberExchange(req, text);
+  // Note: we do NOT remember here. The content script calls back with a 'remember' message
+  // only if the user actually inserts the draft, so discarded regenerates aren't stored.
   return text;
 }
 

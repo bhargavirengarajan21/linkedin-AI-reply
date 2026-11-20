@@ -25,7 +25,7 @@ const PORT = numEnv('PORT', 8787);
 const PROVIDER = (process.env.PROVIDER || 'anthropic').toLowerCase();
 const API_KEY = process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY || '';
 const MODEL = process.env.MODEL
-  || (PROVIDER === 'openai' ? 'gpt-4o-mini' : 'claude-opus-4-8');
+  || (PROVIDER === 'openai' ? 'gpt-4o-mini' : 'claude-sonnet-4-6');
 const MAX_TOKENS = numEnv('MAX_TOKENS', 600);
 
 // Max characters accepted per field. The hosted tier spends the owner's credits, so we
@@ -53,6 +53,11 @@ const GUARDRAIL = [
 const REQUESTS_PER_DAY = numEnv('DAILY_REQUEST_LIMIT', 20);
 const TOKENS_PER_DAY = numEnv('DAILY_TOKEN_LIMIT', 40000);
 
+// Overall daily cap across ALL IPs, so a wave of distinct addresses can't run the owner's
+// key up without bound. These are the hard ceiling on what the free tier can spend per day.
+const GLOBAL_REQUESTS_PER_DAY = numEnv('DAILY_GLOBAL_REQUEST_LIMIT', 1000);
+const GLOBAL_TOKENS_PER_DAY = numEnv('DAILY_GLOBAL_TOKEN_LIMIT', 2000000);
+
 if (!API_KEY) {
   console.error('No API key set. Provide ANTHROPIC_API_KEY or OPENAI_API_KEY in the environment.');
   process.exit(1);
@@ -60,14 +65,18 @@ if (!API_KEY) {
 
 const limiter = createRateLimiter({
   requestsPerDay: REQUESTS_PER_DAY,
-  tokensPerDay: TOKENS_PER_DAY
+  tokensPerDay: TOKENS_PER_DAY,
+  globalRequestsPerDay: GLOBAL_REQUESTS_PER_DAY,
+  globalTokensPerDay: GLOBAL_TOKENS_PER_DAY
 });
 
 const app = express();
 
-// Trust the hosting proxy (Render/Railway/Fly/etc.) so req.ip is the real client IP from
-// X-Forwarded-For, not the proxy's. Without this, every request looks like one IP.
-app.set('trust proxy', true);
+// Trust exactly ONE hop — the hosting proxy (Render/Railway/Fly/etc.) — so req.ip is the
+// real client IP it sets in X-Forwarded-For. Using `true` here would trust the WHOLE header,
+// letting any caller spoof X-Forwarded-For to mint a fresh "IP" and dodge the per-IP limit.
+// If your host sits behind more than one proxy, set this to the exact hop count instead.
+app.set('trust proxy', 1);
 
 app.use(express.json({ limit: '256kb' }));
 // Allow any origin. This is a public free-tier proxy whose real protection is the per-IP
@@ -134,16 +143,17 @@ app.post('/generate', async (req, res) => {
     return res.status(413).json({ ok: false, error: 'Request is too large. Shorten the conversation or your profile text.' });
   }
 
-  const gate = limiter.check(ip);
+  // Reserve the request slot BEFORE calling the model, so a burst of concurrent requests
+  // can't all get through before any is counted. Released below if the call fails.
+  const gate = limiter.reserve(ip);
   setLimitHeaders(res, ip);
   if (!gate.ok) {
     res.set('Retry-After', String(gate.retryAfter));
     const hrs = Math.ceil(gate.retryAfter / 3600);
-    const what = gate.reason === 'tokens' ? 'token' : 'request';
-    return res.status(429).json({
-      ok: false,
-      error: `Daily free ${what} limit reached for your network. It resets in about ${hrs} hour(s), or add your own API key in Settings to remove this limit.`
-    });
+    const error = gate.reason === 'global'
+      ? `The free tier has reached its overall daily limit. It resets in about ${hrs} hour(s), or add your own API key in Settings to keep going.`
+      : `Daily free ${gate.reason === 'tokens' ? 'token' : 'request'} limit reached for your network. It resets in about ${hrs} hour(s), or add your own API key in Settings to remove this limit.`;
+    return res.status(429).json({ ok: false, error });
   }
 
   try {
@@ -155,12 +165,17 @@ app.post('/generate', async (req, res) => {
       user,
       maxTokens: MAX_TOKENS
     });
-    limiter.charge(ip, tokens);
+    limiter.addTokens(ip, tokens);
     setLimitHeaders(res, ip);
     return res.json({ ok: true, text });
   } catch (err) {
-    // Don't charge the IP for an upstream failure.
-    const status = err instanceof ProviderError && err.status >= 400 && err.status < 500 ? 502 : 502;
+    // The call failed, so give back the reserved request slot — the caller shouldn't lose
+    // one of their daily requests to a transient upstream error.
+    limiter.release(ip);
+    setLimitHeaders(res, ip);
+    // A 4xx from upstream means a server-side problem (bad/again expired key, bad model) —
+    // that's our misconfiguration (500), not a bad gateway. 5xx/network errors are 502.
+    const status = err instanceof ProviderError && err.status >= 400 && err.status < 500 ? 500 : 502;
     console.error('generate failed:', err.message);
     return res.status(status).json({ ok: false, error: 'The hosted model is temporarily unavailable. Try again shortly.' });
   }

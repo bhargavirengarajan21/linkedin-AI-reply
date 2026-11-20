@@ -12,12 +12,18 @@ extension  ──POST /generate { system, user }──▶  this server  ──�
            ◀──────── { text } ────────────────           (your key, never exposed)
 ```
 
-- Each client IP gets `DAILY_REQUEST_LIMIT` requests and `DAILY_TOKEN_LIMIT` tokens per day.
-- Requests are checked **before** the upstream call; tokens are charged **after**, from the
-  provider's reported usage. Both reset at midnight **UTC**.
+- Each client IP gets `DAILY_REQUEST_LIMIT` requests and `DAILY_TOKEN_LIMIT` tokens per day,
+  and there's an overall `DAILY_GLOBAL_*` cap across all IPs so the whole tier can't overspend.
+- A request slot is **reserved before** the upstream call (and released if the call fails), so
+  a burst of concurrent requests can't all slip past the limit before any is counted. Tokens are
+  added **after**, from the provider's reported usage. Everything resets at midnight **UTC**.
 - Over budget → `429` with a `Retry-After` header and a friendly message telling the user to
   wait or add their own key.
 - Every response carries `X-RateLimit-Remaining-Requests` / `-Tokens` headers.
+
+> The server runs `app.set('trust proxy', 1)` — it trusts exactly one proxy hop (your host's)
+> for the client IP. Don't change this to `true`, or callers could spoof `X-Forwarded-For` to
+> dodge the per-IP limit. Behind two or more proxies, set it to the exact hop count.
 
 ## Run locally
 
@@ -61,10 +67,12 @@ install, and the real protection is the per-IP daily budget, not CORS.
 |---|---|---|
 | `PROVIDER` | `anthropic` | `anthropic` or `openai` — which account bills the free tier |
 | `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` | — | the key matching `PROVIDER` (required) |
-| `MODEL` | `claude-opus-4-8` / `gpt-4o-mini` | model override |
+| `MODEL` | `claude-sonnet-4-6` / `gpt-4o-mini` | model override (prefer a cost-effective model — your key pays) |
 | `MAX_TOKENS` | `600` | max tokens generated per reply |
 | `DAILY_REQUEST_LIMIT` | `20` | per-IP requests per day |
 | `DAILY_TOKEN_LIMIT` | `40000` | per-IP tokens per day |
+| `DAILY_GLOBAL_REQUEST_LIMIT` | `1000` | overall requests per day across all IPs |
+| `DAILY_GLOBAL_TOKEN_LIMIT` | `2000000` | overall tokens per day across all IPs |
 | `PORT` | `8787` | listen port (most hosts set this) |
 
 ## Note on the in-memory limiter
